@@ -33,7 +33,9 @@
 extern VarInteger movement_bhop_mode;
 extern VarBoolean movement_bhop_jump_on_ladder;
 extern VarBoolean movement_bhop_jump_in_water;
+extern VarBoolean movement_bhop_multijump;
 extern VarInteger movement_bhop_repeat_ms;
+extern VarInteger movement_bhop_standup;
 extern VarBoolean movement_bhop_mode_noslowdown;
 extern VarInteger movement_bhop_mode_noslowdown_method;
 extern VarInteger movement_bhop_mode_noslowdown_factor;
@@ -98,6 +100,11 @@ private:
 
 	bool timer_allows_jump();
 	void reset_jump_time();
+
+	void standup();
+
+	bool m_allow_multijump;
+	void multijump();
 };
 
 #endif // BUNNYHOP_H

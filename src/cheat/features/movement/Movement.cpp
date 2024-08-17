@@ -52,10 +52,7 @@ void CMovement::update_clientmove(float frametime, hl::usercmd_t *cmd)
 
 void CMovement::run_incommands(float frametime, hl::usercmd_t *cmd)
 {
-	if (bunnyhop.is_active())
-	{
-		CMovementBunnyHop::the().update(frametime);
-	}
+	CMovementBunnyHop::the().update(frametime);
 
 	if (gs.is_active())
 	{

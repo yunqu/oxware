@@ -196,9 +196,11 @@ void MenuChilden::Movement::Bunnyhop::contents()
 		g_gui_widgets_i->add_separtor_with_text("Others");
 		g_gui_widgets_i->add_spacing();
 		CUIMenuWidgets::the().add_slider("Jump repeat", "%0.0f ms", &movement_bhop_repeat_ms, "no limit");
+		CUIMenuWidgets::the().add_slider("Stand up", "%0.0f units", &movement_bhop_standup, "off");
 
 		CUIMenuWidgets::the().add_checkbox("Jump if on ladder", &movement_bhop_jump_on_ladder);
 		CUIMenuWidgets::the().add_checkbox("Jump if in water", &movement_bhop_jump_in_water);
+		CUIMenuWidgets::the().add_checkbox("Multi jump", &movement_bhop_multijump);
 
 		g_gui_widgets_i->add_separtor_with_text("Method");
 		CUIMenuWidgets::the().add_listbox("Mode##nolabel", &movement_bhop_mode, { "Legit", "Rage" });

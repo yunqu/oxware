@@ -31,7 +31,9 @@
 VarInteger movement_bhop_mode("movement_bhop_mode", "Bunnyhop mode - legit or rage", BHOPMODE_Legit, BHOPMODE_Legit, BHOPMODE_Rage);
 VarBoolean movement_bhop_jump_on_ladder("movement_bhop_jump_on_ladder", "Jump if also on a ladder", true);
 VarBoolean movement_bhop_jump_in_water("movement_bhop_jump_in_water", "Jump if in water", true);
+VarBoolean movement_bhop_multijump("movement_bhop_multijump", "Jump with every click of the jump key", false);
 VarInteger movement_bhop_repeat_ms("movement_bhop_repeat_ms", "Interval which determines when we can jump again after we jumped", 0, 0, 1000);
+VarInteger movement_bhop_standup("movement_bhop_standup", "Enables stand up with selected distance", 0, 0, 20);
 VarBoolean movement_bhop_mode_noslowdown("movement_bhop_mode_noslowdown", "Enables bhop noslowdown", false);
 VarInteger movement_bhop_mode_noslowdown_method("movement_bhop_mode_noslowdown_method", "Noslowdown method", BHOPNSDN_EngineSpeed, BHOPNSDN_ServerSpeed, BHOPNSDN_EngineSpeed);
 VarInteger movement_bhop_mode_noslowdown_factor("movement_bhop_mode_noslowdown_factor", "How much to no-slowdown", 1, 1, 10);
@@ -42,6 +44,12 @@ VarInteger movement_bhop_legit_scroll_density("movement_bhop_legit_scroll_densit
 
 void CMovementBunnyHop::update(float frametime)
 {
+	if (!CMovement::bunnyhop.is_active())
+	{
+		m_allow_multijump = true;
+		return;
+	}
+
 	int bhop_mode = movement_bhop_mode.get_value();
 
 	bool is_surfing = CLocalState::the().is_surfing();
@@ -49,7 +57,7 @@ void CMovementBunnyHop::update(float frametime)
 	{
 		return;
 	}
-
+	
 	if (movement_bhop_jump_in_water.get_value() && CLocalState::the().get_waterlevel() >= 2)
 	{
 		if (timer_allows_jump())
@@ -70,6 +78,8 @@ void CMovementBunnyHop::update(float frametime)
 		return;
 	}
 
+	standup();
+
 	if (bhop_mode == BHOPMODE_Legit)
 	{
 		// unlike rage, legit bhop provides a lot of funcionality and settings that you can tweak.
@@ -80,6 +90,8 @@ void CMovementBunnyHop::update(float frametime)
 		// rage bhop is far more obvious but on the other hand, perfect.
 		rage_bhop(frametime);
 	}
+
+	multijump();
 }
 
 void CMovementBunnyHop::rage_bhop(float frametime)
@@ -333,4 +345,51 @@ void CMovementBunnyHop::reset_jump_time()
 	}
 
 	m_jump_timer_ms = GetTickCount();
+}
+
+void CMovementBunnyHop::standup()
+{
+	const int units = movement_bhop_standup.get_value();
+	if (units == 0)
+	{
+		return;
+	}
+
+	if (perfect_condition_for_jump())
+	{
+		return;
+	}
+
+	if (CLocalState::the().get_fall_velocity() <= 0.0f)
+	{
+		return;
+	}
+
+	if (CLocalState::the().get_ground_dist() > units)
+	{
+		return;
+	}
+
+	CClientMovementPacket::the().set_button_bit(IN_DUCK, true);
+}
+
+void CMovementBunnyHop::multijump()
+{
+	if (!m_allow_multijump)
+	{
+		return;
+	}
+
+	if (!movement_bhop_multijump.get_value())
+	{
+		return;
+	}
+
+	if (perfect_condition_for_jump())
+	{
+		return;
+	}
+
+	CClientMovementPacket::the().set_button_bit(IN_JUMP, true);
+	m_allow_multijump = false;
 }

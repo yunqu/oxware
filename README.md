@@ -172,6 +172,7 @@ In order to fully build everything, all you need to do is just hit **ctrl + shif
 	- Auto JOF
 	- Visual screen information
 - Fancy custom cl_showfps rendering
+- FPS unlocker when connecting to any server
 - Backtrack, see [this video](https://youtu.be/G-ZjjsUHHlg).
 - Fake latency
 - FPS fixer for non-steam CS

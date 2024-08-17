@@ -124,7 +124,7 @@ void CMovementStrafeHelper::update()
 	auto cmd = CClientMovementPacket::the().get_cmd();
 	auto cl = CMemoryHookMgr::the().cl().get();
 
-	float x = CLocalState::the().get_viewangle_delta().x;
+	float x = CLocalState::the().get_viewangle_delta()[YAW];
 	if (x > 0)
 	{
 		m_mouse_direction = RIGHT;
@@ -138,13 +138,15 @@ void CMovementStrafeHelper::update()
 		m_mouse_direction = FORWARD;
 	}
 
-	bool is_onground = CLocalState::the().is_on_ground_safe();
-	if (is_onground)
+	const bool is_onground = CLocalState::the().is_on_ground();
+
+	if (!(is_onground && !movement_strafe_helper_accumulation_on_ground.get_value()))
 	{
-		if (movement_strafe_helper_accumulation_on_ground.get_value())
-		{
-			correction();
-		}
+		correction();
+	}
+
+	if (is_onground && !CMovement::bunnyhop.is_active() && !CMovement::gs.is_active())
+	{
 		return;
 	}
 
@@ -184,8 +186,6 @@ void CMovementStrafeHelper::update()
 			CClientMovementPacket::the().set_button_bit(IN_MOVELEFT, strafe_dir.move_left);
 		}
 	}
-
-	correction();
 }
 
 void CMovementStrafeHelper::render_debug()

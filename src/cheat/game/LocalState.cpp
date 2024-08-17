@@ -41,12 +41,13 @@ void CLocalState::update_clientmove(float frametime, hl::usercmd_t* cmd)
 	m_engine_frametime = frametime;
 
 	auto cl = CMemoryHookMgr::the().cl().get();
-	m_vieangle_delta = Vector2D(cl->viewangles[YAW] - m_last_viewangles[YAW], cl->viewangles[PITCH] - m_last_viewangles[PITCH]);
-	m_vieangle_delta *= -1.0f;
-
+	m_viewangle_delta = cl->viewangles - m_last_viewangles;
+	CMath::the().normalize_angles(m_viewangle_delta);
+	m_viewangle_delta.Negate();
+	
 	// round to zero
-	if (m_vieangle_delta.x < 0.01 && m_vieangle_delta.x > -0.01) m_vieangle_delta.x = 0.0f;
-	if (m_vieangle_delta.y < 0.01 && m_vieangle_delta.y > -0.01) m_vieangle_delta.y = 0.0f;
+	if (m_viewangle_delta.x < 0.01 && m_viewangle_delta.x > -0.01) m_viewangle_delta.x = 0.0f;
+	if (m_viewangle_delta.y < 0.01 && m_viewangle_delta.y > -0.01) m_viewangle_delta.y = 0.0f;
 
 	m_pmove = *CMemoryHookMgr::the().pmove().get();
 
@@ -224,9 +225,9 @@ EPlayerHull CLocalState::get_current_hull_tracing()
 	return m_tracing_hull;
 }
 
-Vector2D CLocalState::get_viewangle_delta()
+Vector CLocalState::get_viewangle_delta()
 {
-	return m_vieangle_delta;
+	return m_viewangle_delta;
 }
 
 hl::frame_t* CLocalState::get_current_frame()

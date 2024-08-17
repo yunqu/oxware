@@ -302,6 +302,13 @@ struct CL_CreateMove_FnDetour_t final : public GenericMemoryFnDetour_cdecl<void,
 	static void CL_CreateMove(float frametime, hl::usercmd_t *cmd, int active);
 };
 
+// bool __cdecl Host_FilterTime(float time)
+struct Host_FilterTime_FnDetour_t final : public GenericMemoryFnDetour_cdecl<hl::qboolean, float>
+{
+	bool install();
+	static hl::qboolean Host_FilterTime(float time);
+};
+
 // void _Host_Frame(float time)
 struct _Host_Frame_FnDetour_t final : public GenericMemoryFnDetour_cdecl<void, float>
 {
@@ -614,6 +621,7 @@ public:
 	inline auto& Key_Event() { static Key_Event_FnDetour_t fnhook; return fnhook; }
 	inline auto& Host_Noclip_f() { static Host_Noclip_f_FnDetour_t fnhook; return fnhook; }
 	inline auto& CL_CreateMove() { static CL_CreateMove_FnDetour_t fnhook; return fnhook; }
+	inline auto& Host_FilterTime() { static Host_FilterTime_FnDetour_t fnhook; return fnhook; }
 	inline auto& _Host_Frame() { static _Host_Frame_FnDetour_t fnhook; return fnhook; }
 	inline auto& CL_ReallocateDynamicData() { static CL_ReallocateDynamicData_FnDetour_t fnhook; return fnhook; }
 	inline auto& CL_DeallocateDynamicData() { static CL_DeallocateDynamicData_FnDetour_t fnhook; return fnhook; }

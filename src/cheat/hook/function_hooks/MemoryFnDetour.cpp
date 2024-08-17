@@ -438,6 +438,19 @@ void CL_CreateMove_FnDetour_t::CL_CreateMove(float frametime, hl::usercmd_t *cmd
 
 //---------------------------------------------------------------------------------
 
+bool Host_FilterTime_FnDetour_t::install()
+{
+	initialize("Host_FilterTime", L"hw.dll");
+	return detour_using_bytepattern((uintptr_t*)Host_FilterTime);
+}
+
+hl::qboolean Host_FilterTime_FnDetour_t::Host_FilterTime(float time)
+{
+	return CMemoryFnDetourMgr::the().Host_FilterTime().call(time);
+}
+
+//---------------------------------------------------------------------------------
+
 bool _Host_Frame_FnDetour_t::install()
 {
 	initialize("_Host_Frame", L"hw.dll");

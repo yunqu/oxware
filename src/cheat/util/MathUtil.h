@@ -73,7 +73,7 @@ public:
 	float vec2yaw(const Vector& dir);
 	float angle_mod(float a);
 
-	void normalize_angles(float* angles);
+	void normalize_angles(float* angles, const float maximum = 360.0f);
 	void interp_angles(float* start, float* end, float* output, float frac);
 };
 

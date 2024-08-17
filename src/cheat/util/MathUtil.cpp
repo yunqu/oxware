@@ -159,14 +159,14 @@ float CMath::angle_mod(float a)
 	return a;
 }
 
-void CMath::normalize_angles(float * angles)
+void CMath::normalize_angles(float* angles, const float maximum)
 {
 	for (int i = 0; i < 3; i++)
 	{
-		if (angles[i] > 180.f)
-			angles[i] -= 360.f;
-		else if (angles[i] < -180.f)
-			angles[i] += 360.f;
+		if (angles[i] > maximum / 2)
+			angles[i] -= maximum;
+		else if (angles[i] < -maximum / 2)
+			angles[i] += maximum;
 	}
 }
 

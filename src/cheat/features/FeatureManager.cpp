@@ -106,6 +106,9 @@ void CFeatureManager::precache_features()
 	// InGame Screen rendering
 	add_new_feature(BaseFeature(&ingamescreen_better_cl_showfps, "Better cl_showfps"));
 
+	// InConnect FPS unlocker
+	add_new_feature(BaseFeature(&inconnect_fps_unlocker, "FPS unlocker"));
+
 	// Movement
 	add_new_feature(BaseFeature(CMovement::bunnyhop.get_toggle_var(), "Bunnyhop"));
 	add_new_feature(BaseFeature(CMovement::airstuck.get_toggle_var(), "Air stuck"));

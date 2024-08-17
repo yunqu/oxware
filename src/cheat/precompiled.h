@@ -308,6 +308,7 @@ enum EPlayerHull
 #include "features/StuffCmdFilter.h"
 #include "features/ResourceConsistencyBypass.h"
 #include "features/IngameScreenRendering.h"
+#include "features/InconnectFpsUnlocker.h"
 #include "features/ThirdPerson.h"
 #include "features/NonSteamFpsFixer.h"
 #include "features/AntiDemoRecorder.h"

@@ -82,6 +82,7 @@ void CUIMenu::on_initialize()
 				tab_screen_main.m_children.push_back(new MenuChilden::Screen::ESP({ "🔳 ESP", 290, true }));
 				tab_screen_main.m_children.push_back(new MenuChilden::Screen::CustomCrosshair({ "➕ Custom crosshair", 265, true }));
 				tab_screen_main.m_children.push_back(new MenuChilden::Screen::ClShowFPSEnhancement({ "cl_showfps enhancement", 130, true }));
+				tab_screen_main.m_children.push_back(new MenuChilden::Screen::FPSUnlocker({ "FPS unlocker", 100, true }));
 				tab_screen_main.m_children.push_back(new MenuChilden::Screen::MovementInfo({ "Movement info", 150, true }));
 			}
 		}

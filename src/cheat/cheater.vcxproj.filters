@@ -414,6 +414,9 @@
     <ClCompile Include="ui\ThemeEditor.cpp">
       <Filter>src\UI\other</Filter>
     </ClCompile>
+    <ClCompile Include="features\InconnectFpsUnlocker.cpp">
+      <Filter>src\features\screen</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="precompiled.h" />
@@ -719,6 +722,9 @@
     </ClInclude>
     <ClInclude Include="ui\ThemeEditor.h">
       <Filter>src\UI\other</Filter>
+    </ClInclude>
+    <ClInclude Include="features\InconnectFpsUnlocker.h">
+      <Filter>src\features\screen</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

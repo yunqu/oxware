@@ -424,6 +424,7 @@ struct MenuChilden
 		DECL_CHILD(ESP);
 		DECL_CHILD(CustomCrosshair);
 		DECL_CHILD(ClShowFPSEnhancement);
+		DECL_CHILD(FPSUnlocker);
 		DECL_CHILD(MovementInfo);
 	};
 

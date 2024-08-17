@@ -30,6 +30,7 @@
 
 bool CMemoryFnDetourMgr::install_hooks()
 {
+	Host_FilterTime().install();
 	_Host_Frame().install();
 
 	// just to be absolutely safe that the engine doesn't call a function in a middle of us deouring it.
@@ -181,6 +182,7 @@ void CMemoryFnDetourMgr::uninstall_hooks()
 
 	// must be unloaded at last, because of synchronizated cheat unload. see CEngineSynchronization for more info.
 	_Host_Frame().uninstall();
+	Host_FilterTime().uninstall();
 
 	m_unloading_hooks_mutex = false;
 }
@@ -446,7 +448,13 @@ bool Host_FilterTime_FnDetour_t::install()
 
 hl::qboolean Host_FilterTime_FnDetour_t::Host_FilterTime(float time)
 {
-	return CMemoryFnDetourMgr::the().Host_FilterTime().call(time);
+	CInconnectFpsUnlocker::the().begin();
+
+	auto result = CMemoryFnDetourMgr::the().Host_FilterTime().call(time);
+
+	CInconnectFpsUnlocker::the().end();
+	
+	return result;
 }
 
 //---------------------------------------------------------------------------------

@@ -142,6 +142,13 @@ void MenuChilden::Screen::ClShowFPSEnhancement::contents()
 	});
 }
 
+void MenuChilden::Screen::FPSUnlocker::contents()
+{
+	CUIMenuWidgets::the().add_checkbox("Enable", &inconnect_fps_unlocker);
+
+	CUIMenuWidgets::the().add_description_text("Please note that this is not necessary for the local server.");
+}
+
 void MenuChilden::Screen::MovementInfo::contents()
 {
 	CUIMenuWidgets::the().add_checkbox("Enable", &movement_visual_info);

@@ -28,11 +28,18 @@
 
 #include "precompiled.h"
 
-void CGameEvents::on_connect()
+void CGameEvents::on_connected()
 {
 	CConsole::the().dinfo(__FUNCTION__);
+
+	CBulletTrace::the().on_connected();
 
 	CEnvironmentalEffects::the().restart();
 
 	CNetchanSequenceHistory::the().flush();
+}
+
+void CGameEvents::on_disconnected()
+{
+	CConsole::the().dinfo(__FUNCTION__);
 }

@@ -473,7 +473,14 @@ void _Host_Frame_FnDetour_t::_Host_Frame(float time)
 	bool is_connected = (CMemoryHookMgr::the().cls()->state == hl::ca_active);
 	if (was_connected != is_connected)
 	{
-		CGameEvents::the().on_connect();
+		if (is_connected)
+		{
+			CGameEvents::the().on_connected();
+		}
+		else
+		{
+			CGameEvents::the().on_disconnected();
+		}
 		was_connected = is_connected;
 	}
 
@@ -1251,6 +1258,8 @@ bool HUD_DrawTransparentTriangles_FnDetour_t::install()
 void HUD_DrawTransparentTriangles_FnDetour_t::HUD_DrawTransparentTriangles()
 {
 	CMemoryFnDetourMgr::the().HUD_DrawTransparentTriangles().call();
+
+	CBulletTrace::the().render();
 
 	auto iparticleman = CHLInterfaceHook::the().IParticleMan();
 	if (iparticleman)

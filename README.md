@@ -145,10 +145,12 @@ In order to fully build everything, all you need to do is just hit **ctrl + shif
 	- Flat/shaded
 	- Disabled playermodel animations
 - Thirdperson
+- Free camera
 - World visuals
 	- Rainbow world 🌈
 	- Dimlight
 	- World fog
+- Bullet trace
 - Environmental effects, see [this video](https://youtu.be/dsA--TX9MVU)
 - Bypassing game constrains
 	- Re-enabling noclip (normally disabled in CS 1.6)

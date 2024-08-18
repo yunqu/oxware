@@ -217,6 +217,7 @@
     <ClCompile Include="features\Automation.cpp" />
     <ClCompile Include="features\BackTrack.cpp" />
     <ClCompile Include="features\EnvironmentalEffects.cpp" />
+    <ClCompile Include="features\FreeCamera.cpp" />
     <ClCompile Include="features\IngameScreenRendering.cpp" />
     <ClCompile Include="features\movement\AirStuck.cpp" />
     <ClCompile Include="features\movement\AutoJOF.cpp" />
@@ -345,6 +346,7 @@
     <ClInclude Include="features\Automation.h" />
     <ClInclude Include="features\BackTrack.h" />
     <ClInclude Include="features\EnvironmentalEffects.h" />
+    <ClInclude Include="features\FreeCamera.h" />
     <ClInclude Include="features\IngameScreenRendering.h" />
     <ClInclude Include="features\movement\AirStuck.h" />
     <ClInclude Include="features\movement\AutoJOF.h" />

@@ -417,6 +417,9 @@
     <ClCompile Include="features\InconnectFpsUnlocker.cpp">
       <Filter>src\features\screen</Filter>
     </ClCompile>
+    <ClCompile Include="features\FreeCamera.cpp">
+      <Filter>src\features\world</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="precompiled.h" />
@@ -725,6 +728,9 @@
     </ClInclude>
     <ClInclude Include="features\InconnectFpsUnlocker.h">
       <Filter>src\features\screen</Filter>
+    </ClInclude>
+    <ClInclude Include="features\FreeCamera.h">
+      <Filter>src\features\world</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

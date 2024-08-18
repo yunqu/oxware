@@ -126,6 +126,9 @@ void CFeatureManager::precache_features()
 	// thirdperson
 	add_new_feature(BaseFeature(&thirdperson_dist, 0, "Thirdperson"));
 
+	// free camera
+	add_new_feature(BaseFeature(&freecam_enable, "Free camera"));
+
 	// non-steam fps fix
 	add_new_feature(BaseFeature(&nonsteam_fps_fix, "Non-steam FPS fix"));
 

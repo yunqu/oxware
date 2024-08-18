@@ -310,6 +310,7 @@ enum EPlayerHull
 #include "features/IngameScreenRendering.h"
 #include "features/InconnectFpsUnlocker.h"
 #include "features/ThirdPerson.h"
+#include "features/FreeCamera.h"
 #include "features/NonSteamFpsFixer.h"
 #include "features/AntiDemoRecorder.h"
 #include "features/WorldVisuals.h"

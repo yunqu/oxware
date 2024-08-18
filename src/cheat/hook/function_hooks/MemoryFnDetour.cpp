@@ -397,13 +397,13 @@ void CL_CreateMove_FnDetour_t::CL_CreateMove(float frametime, hl::usercmd_t *cmd
 	{
 		CLocalState::the().update_clientmove(frametime, cmd);
 
+		CNetchanSequenceHistory::the().update();
+
 		// update if we're alive, connected, etc..
 		g_in_commands_i->update_activation_conditions();
 
-		if (!CGameUtil::the().is_spectator())
+		if (!CGameUtil::the().is_spectator() && !CLocalState::the().local_player())
 		{
-			CNetchanSequenceHistory::the().update();
-
 			CClientMovementPacket::the().update_clientmove(cmd);
 
 			CEngineSpeedControl::the().update();
@@ -430,6 +430,7 @@ void CL_CreateMove_FnDetour_t::CL_CreateMove(float frametime, hl::usercmd_t *cmd
 			CUserMSGDetourMgr::the().ReceiveW_fn().call("ReceiveW", sizeof(uint8_t), &value);
 		}
 #endif
+		CFreeCamera::the().move(cmd);
 
 		if (debug_render_info.get_value())
 		{
@@ -596,6 +597,8 @@ void V_CalcRefdef_FnDetour_t::V_CalcRefdef(hl::ref_params_t *pparams)
 	if (!CAntiScreen::the().hide_visuals() && !CPanic::the().panicking())
 	{
 		CThirdPerson::the().update(pparams);
+
+		CFreeCamera::the().update(pparams);
 
 		// no-recoil
 		//pparams->viewangles = pparams->cl_viewangles + pparams->punchangle;
@@ -1176,7 +1179,8 @@ int CL_IsThirdPerson_FnDetour_t::CL_IsThirdPerson()
 {
 	if (!CAntiScreen::the().hide_visuals() && !CPanic::the().panicking())
 	{
-		return CThirdPerson::the().thirdperson.is_active() && thirdperson_dist.get_value() != 0;
+		if ((CThirdPerson::the().thirdperson.is_active()) || freecam_enable.get_value())
+			return 1;
 	}
 
 	return CMemoryFnDetourMgr::the().CL_IsThirdPerson().call();

@@ -396,6 +396,7 @@ struct MenuChilden
 	{
 		DECL_CHILD(Removals);
 		DECL_CHILD(Thirdperson);
+		DECL_CHILD(FreeCamera);
 		DECL_CHILD(AntiDemoRecorder);
 		DECL_CHILD(AntiScreen);
 		DECL_CHILD(Automation);

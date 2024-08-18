@@ -80,8 +80,19 @@ void MenuChilden::World::Thirdperson::contents()
 		g_gui_widgets_i->add_spacing();
 		g_gui_widgets_i->add_spacing();
 
-		CUIMenuWidgets::the().add_slider("Distance", "%0.0f units", &thirdperson_dist);
+		CUIMenuWidgets::the().add_slider("Distance", "%0.0f units", &thirdperson_dist, "auto");
+		CUIMenuWidgets::the().add_slider("Smooth", "%0.0f", &thirdperson_smooth, "off");
 		CUIMenuWidgets::the().add_checkbox("Block wall", &thirdperson_block_wall);
+	});
+}
+
+void MenuChilden::World::FreeCamera::contents()
+{
+	CUIMenuWidgets::the().feature_enabled_section(
+	&freecam_enable,
+	[]()
+	{
+		CUIMenuWidgets::the().add_slider("Speed", "%0.0f", &freecam_speed);
 	});
 }
 
@@ -145,7 +156,14 @@ void MenuChilden::World::ViewmodelOffset::contents()
 	&viewmodel_offset_enable,
 	[]()
 	{
-		CUIMenuWidgets::the().add_slider("Amount", "%0.1f", &viewmodel_offset_value);
+		g_gui_widgets_i->add_text("X axis");
+		CUIMenuWidgets::the().add_slider_nolabel("Amount", "%0.1f", &viewmodel_offset_x);
+
+		g_gui_widgets_i->add_text("Y axis");
+		CUIMenuWidgets::the().add_slider_nolabel("Amount##1", "%0.1f", &viewmodel_offset_y);
+
+		g_gui_widgets_i->add_text("Z axis");
+		CUIMenuWidgets::the().add_slider_nolabel("Amount##2", "%0.1f", &viewmodel_offset_z);
 	});
 }
 

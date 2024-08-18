@@ -131,9 +131,6 @@
     <ClCompile Include="..\public\BaseVariable.cpp">
       <Filter>public</Filter>
     </ClCompile>
-    <ClCompile Include="features\BulletTrace.cpp">
-      <Filter>src\features</Filter>
-    </ClCompile>
     <ClCompile Include="..\public\code_performace_profile.cpp">
       <Filter>public</Filter>
     </ClCompile>
@@ -420,6 +417,9 @@
     <ClCompile Include="features\FreeCamera.cpp">
       <Filter>src\features\world</Filter>
     </ClCompile>
+    <ClCompile Include="features\BulletTrace.cpp">
+      <Filter>src\features\world</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="precompiled.h" />
@@ -470,9 +470,6 @@
     </ClInclude>
     <ClInclude Include="..\public\BaseVariable.h">
       <Filter>public</Filter>
-    </ClInclude>
-    <ClInclude Include="features\BulletTrace.h">
-      <Filter>src\features</Filter>
     </ClInclude>
     <ClInclude Include="..\public\code_performace_profile.h">
       <Filter>public</Filter>
@@ -730,6 +727,9 @@
       <Filter>src\features\screen</Filter>
     </ClInclude>
     <ClInclude Include="features\FreeCamera.h">
+      <Filter>src\features\world</Filter>
+    </ClInclude>
+    <ClInclude Include="features\BulletTrace.h">
       <Filter>src\features\world</Filter>
     </ClInclude>
   </ItemGroup>

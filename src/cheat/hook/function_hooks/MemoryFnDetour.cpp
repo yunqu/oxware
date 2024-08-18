@@ -61,7 +61,7 @@ bool CMemoryFnDetourMgr::install_hooks()
 		R_ForceCVars().install(); // there isn't such function, e.g. in 3266
 	}
 	V_CalcRefdef().install();
-	//EV_HLDM_FireBullets().install();
+	EV_HLDM_FireBullets().install();
 	HUD_Redraw().install();
 	R_GLStudioDrawPoints().install();
 	V_FadeAlpha().install();
@@ -134,7 +134,7 @@ void CMemoryFnDetourMgr::uninstall_hooks()
 		R_ForceCVars().uninstall(); // there isn't such function, e.g. in 3266
 	}
 	V_CalcRefdef().uninstall();
-	//EV_HLDM_FireBullets().uninstall();
+	EV_HLDM_FireBullets().uninstall();
 	HUD_Redraw().uninstall();
 	R_GLStudioDrawPoints().uninstall();
 	V_FadeAlpha().uninstall();

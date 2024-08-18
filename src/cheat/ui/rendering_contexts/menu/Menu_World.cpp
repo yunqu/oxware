@@ -196,21 +196,21 @@ void MenuChilden::World::SmokeVisuals::contents()
 void MenuChilden::World::NonSteamFpsFix::contents()
 {
 	CUIMenuWidgets::the().section_unavailable_for_builds(
-		[](int current_bn) { return current_bn >= FIRST_SDL_BUILD; }, "< 5943",
-		[]()
+	[](int current_bn) { return current_bn >= FIRST_SDL_BUILD; }, "< 5943",
+	[]()
+	{
+		CUIMenuWidgets::the().add_checkbox("Enable", &nonsteam_fps_fix);
+
+		CUIMenuWidgets::the().add_description_text(
+			"This fixes the FPS movement dependence, where with higher fps you would get slomotion movement and \"higher\" gravity."
+			"\nFor more technical details, follow this link:");
+
+		g_gui_widgets_i->push_font(g_gui_fontmgr_i->get_font(FID_SegoeUI, FSZ_13px, FDC_Regular));
+		if (g_gui_widgets_i->add_url_text("github.com/ValveSoftware/halflife/issues/1940"))
 		{
-			CUIMenuWidgets::the().add_checkbox("Enable", &nonsteam_fps_fix);
-
-			CUIMenuWidgets::the().add_description_text(
-				"This fixes the FPS movement dependence, where with higher fps you would get slomotion movement and \"higher\" gravity."
-				"\nFor more technical details, follow this link:");
-
-			g_gui_widgets_i->push_font(g_gui_fontmgr_i->get_font(FID_SegoeUI, FSZ_13px, FDC_Regular));
-			if (g_gui_widgets_i->add_url_text("github.com/ValveSoftware/halflife/issues/1940"))
-			{
-				CGenericUtil::the().open_link_inside_browser("https://github.com/ValveSoftware/halflife/issues/1940");
-			}
-			g_gui_widgets_i->pop_font();
+			CGenericUtil::the().open_link_inside_browser("https://github.com/ValveSoftware/halflife/issues/1940");
+		}
+		g_gui_widgets_i->pop_font();
 	});
 }
 
@@ -242,6 +242,27 @@ void MenuChilden::World::WorldVisuals::contents()
 			CUIMenuWidgets::the().add_slider("Density", "%0.1f", &world_visuals_fog_density);
 		});
 	});
+}
+
+void MenuChilden::World::BulletTrace::contents()
+{
+	CUIMenuWidgets::the().feature_enabled_section(
+	&bullettrace_enable, &bullettrace_color,
+	[]()
+	{
+		if (g_gui_widgets_i->begin_columns("bullettrace_player", 2))
+		{
+			g_gui_widgets_i->goto_next_column();
+			CUIMenuWidgets::the().add_checkbox("Enemy", &bullettrace_enemy);
+			g_gui_widgets_i->goto_next_column();
+			CUIMenuWidgets::the().add_checkbox("Teammates", &bullettrace_teammates);
+
+			g_gui_widgets_i->end_columns();
+		}
+
+		CUIMenuWidgets::the().add_slider("Thickness", "%.1f", &bullettrace_thickness);
+		CUIMenuWidgets::the().add_slider("Liveness", "%.1f", &bullettrace_liveness);
+	}, true);
 }
 
 void MenuChilden::World::EnvironmentalEffects::contents()
@@ -308,5 +329,5 @@ void MenuChilden::World::EnvironmentalEffects::contents()
 			});
 
 		g_gui_widgets_i->end_tab();
-				});
+	});
 }

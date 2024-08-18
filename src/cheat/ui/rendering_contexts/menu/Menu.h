@@ -406,6 +406,7 @@ struct MenuChilden
 		DECL_CHILD(SmokeVisuals);
 		DECL_CHILD(NonSteamFpsFix);
 		DECL_CHILD(WorldVisuals);
+		DECL_CHILD(BulletTrace);
 		DECL_CHILD(EnvironmentalEffects);
 	};
 

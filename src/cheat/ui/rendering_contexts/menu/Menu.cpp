@@ -56,6 +56,7 @@ void CUIMenu::on_initialize()
 				tab_world_main.m_children.push_back(new MenuChilden::World::SmokeVisuals({ "Smoke visuals", 180, true }));
 				tab_world_main.m_children.push_back(new MenuChilden::World::NonSteamFpsFix({ "Non-steam fps fix", 150, true }));
 				tab_world_main.m_children.push_back(new MenuChilden::World::WorldVisuals({ "🌎 World visuals", 235, true }));
+				tab_world_main.m_children.push_back(new MenuChilden::World::BulletTrace({ "Bullet trace", 150, true }));
 				tab_world_main.m_children.push_back(new MenuChilden::World::EnvironmentalEffects({ "⛈ Environmental effects", 300, true }));
 			}
 		}

@@ -217,7 +217,6 @@ void COxWareUI::initialize(HWND wnd)
 
 	CESP::the().initialize_gui();
 	CFlashbangFadeModifier::the().initialize_gui();
-	CBulletTrace::the().initialize_gui();
 	CClientMovementPacketPlot::the().initialize_gui();
 
 	CConsole::the().info("Cheat UI fully initialized.");

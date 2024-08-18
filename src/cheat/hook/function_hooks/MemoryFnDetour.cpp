@@ -402,7 +402,7 @@ void CL_CreateMove_FnDetour_t::CL_CreateMove(float frametime, hl::usercmd_t *cmd
 		// update if we're alive, connected, etc..
 		g_in_commands_i->update_activation_conditions();
 
-		if (!CGameUtil::the().is_spectator() && !CLocalState::the().local_player())
+		if (!CGameUtil::the().is_spectator() && CLocalState::the().local_player())
 		{
 			CClientMovementPacket::the().update_clientmove(cmd);
 

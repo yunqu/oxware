@@ -31,7 +31,7 @@
 #pragma once
 
 extern VarInteger thirdperson_dist;
-extern VarInteger thirdperson_smooth;
+extern VarFloat thirdperson_smooth;
 extern VarBoolean thirdperson_block_wall;
 
 class CThirdPerson

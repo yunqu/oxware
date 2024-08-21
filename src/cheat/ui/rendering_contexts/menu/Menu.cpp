@@ -46,7 +46,7 @@ void CUIMenu::on_initialize()
 				auto& tab_world_main = tab_world.m_sections["main"];
 				tab_world_main.m_children.push_back(new MenuChilden::World::Removals({ "Removals", 250, true }));
 				tab_world_main.m_children.push_back(new MenuChilden::World::Thirdperson({ "Thirdperson", 175, true }));
-				tab_world_main.m_children.push_back(new MenuChilden::World::FreeCamera({ "Free camera", 90, true }));
+				tab_world_main.m_children.push_back(new MenuChilden::World::FreeCamera({ "Free camera", 125, true }));
 				tab_world_main.m_children.push_back(new MenuChilden::World::AntiDemoRecorder({ "📼 Anti demo recorder", 125, true }));
 				tab_world_main.m_children.push_back(new MenuChilden::World::AntiScreen({ "🖥 Anti screen", 90, true }));
 				tab_world_main.m_children.push_back(new MenuChilden::World::Automation({ "Automation", 120, true }));

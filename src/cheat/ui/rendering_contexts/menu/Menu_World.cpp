@@ -81,7 +81,7 @@ void MenuChilden::World::Thirdperson::contents()
 		g_gui_widgets_i->add_spacing();
 
 		CUIMenuWidgets::the().add_slider("Distance", "%0.0f units", &thirdperson_dist, "auto");
-		CUIMenuWidgets::the().add_slider("Smooth", "%0.0f", &thirdperson_smooth, "off");
+		CUIMenuWidgets::the().add_slider("Smooth", "%0.1fx", &thirdperson_smooth, "off");
 		CUIMenuWidgets::the().add_checkbox("Block wall", &thirdperson_block_wall);
 	});
 }
@@ -92,7 +92,8 @@ void MenuChilden::World::FreeCamera::contents()
 	&freecam_enable,
 	[]()
 	{
-		CUIMenuWidgets::the().add_slider("Speed", "%0.0f", &freecam_speed);
+		CUIMenuWidgets::the().add_slider("Speed", "%0.1fx", &freecam_speed);
+		CUIMenuWidgets::the().add_description_text("Please note that the current speed of the player is taken.");
 	});
 }
 

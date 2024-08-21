@@ -31,14 +31,14 @@
 InCommand CThirdPerson::thirdperson = InCommand("thirdperson", NULL, true, IN_ACTCOND_Alive);
 
 VarInteger thirdperson_dist("thirdperson_dist", "Distance from the player when in 3rd person view", 0, 0, 1000);
-VarInteger thirdperson_smooth("thirdperson_smooth", "Uses linear interpolation to smooth the movement", 10, 0, 50);
+VarFloat thirdperson_smooth("thirdperson_smooth", "Uses linear interpolation to smooth the movement", 1.0f, 0.0f, 2.0f);
 VarBoolean thirdperson_block_wall("thirdperson_block_wall", "3rd person camera gets blocked by a solid object, doesn't clip through", true);
 
 void CThirdPerson::update(hl::ref_params_t* pparams)
 {
 	float dist = (float)thirdperson_dist.get_value();
 	float smooth = (float)thirdperson_smooth.get_value();
-	smooth = smooth != 0 ? 1.0f / smooth : 1.0f;
+	smooth = smooth != 0 ? (10.0f / smooth) * pparams->frametime : 1.0f;
 
 	auto local = CLocalState::the().local_player();
 	if (!local)

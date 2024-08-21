@@ -31,7 +31,7 @@
 #include "precompiled.h"
 
 VarBoolean freecam_enable("freecam_enable", "Allows you to move freely around the world", false);
-VarInteger freecam_speed("freecam_speed", "Adjusting the speed of movement", 3, 1, 10);
+VarFloat freecam_speed("freecam_speed", "Adjusting the speed of movement", 2.5f, 0.5f, 5.0f);
 
 void CFreeCamera::update(hl::ref_params_t* pparams)
 {
@@ -55,37 +55,27 @@ void CFreeCamera::move(hl::usercmd_t* cmd)
 		return;
 	}
 
+	const float frametime = CLocalState::the().get_engine_frametime();
 	float speed = freecam_speed.get_value();
+
 	Vector forward, right, up;
-
 	CMath::the().angle_vectors(cmd->viewangles, &forward, &right, &up);
-	forward *= speed;
-	right *= speed;
-	up *= speed;
 
-	if (cmd->buttons & IN_FORWARD) // Forward
+	forward *= cmd->forwardmove * speed * frametime;
+	right *= cmd->sidemove * speed * frametime;
+	up *= cmd->upmove * speed * frametime;
+
+	if ((cmd->buttons & IN_FORWARD) || (cmd->buttons & IN_BACK)) // Forward & Back
 	{
 		m_origin += forward;
 	}
-	if (cmd->buttons & IN_BACK) // Back
-	{
-		m_origin -= forward;
-	}
-	if (cmd->buttons & IN_MOVERIGHT) // Right
+	if ((cmd->buttons & IN_MOVERIGHT) || (cmd->buttons & IN_MOVELEFT)) // Right & Left
 	{
 		m_origin += right;
 	}
-	if (cmd->buttons & IN_MOVELEFT) // Left
-	{
-		m_origin -= right;
-	}
-	if (cmd->buttons & IN_JUMP) // Up
+	if ((cmd->buttons & IN_JUMP) || (cmd->buttons & IN_DUCK)) // Up & Down
 	{
 		m_origin += up;
-	}
-	if (cmd->buttons & IN_DUCK) // Down
-	{
-		m_origin -= up;
 	}
 
 	cmd->buttons = 0;

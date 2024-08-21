@@ -32,7 +32,7 @@
 #define FREECAMERA_H
 
 extern VarBoolean freecam_enable;
-extern VarInteger freecam_speed;
+extern VarFloat freecam_speed;
 
 class CFreeCamera
 {

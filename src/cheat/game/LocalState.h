@@ -85,6 +85,8 @@ public:
 	float get_ground_dist();
 	float get_edge_dist();
 
+	int get_fog_counter();
+
 	bool is_surfing();
 	bool is_on_ladder();
 
@@ -124,6 +126,8 @@ private:
 	float m_ground_angle = 0.0f;
 	float m_ground_dist = 0.0f;
 	float m_edge_dist = 0.0f;
+	
+	int m_fog_counter = 0.0f;
 
 	hl::playermove_t* m_pmove = nullptr;
 

@@ -200,6 +200,12 @@ void MenuChilden::Movement::Bunnyhop::contents()
 
 		CUIMenuWidgets::the().add_checkbox("Jump if on ladder", &movement_bhop_jump_on_ladder);
 		CUIMenuWidgets::the().add_checkbox("Jump if in water", &movement_bhop_jump_in_water);
+		CUIMenuWidgets::the().feature_enabled_section(
+		&movement_bhop_break_jump_animation,
+		[]()
+		{
+			CUIMenuWidgets::the().add_checkbox("No touch ground illusion", &movement_bhop_notouch_ground_illusion);
+		}, "Break jump animation");
 		CUIMenuWidgets::the().add_checkbox("Multi jump", &movement_bhop_multijump);
 
 		g_gui_widgets_i->add_separtor_with_text("Method");

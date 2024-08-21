@@ -31,11 +31,13 @@
 #pragma once
 
 extern VarInteger movement_bhop_mode;
-extern VarBoolean movement_bhop_jump_on_ladder;
-extern VarBoolean movement_bhop_jump_in_water;
-extern VarBoolean movement_bhop_multijump;
 extern VarInteger movement_bhop_repeat_ms;
 extern VarInteger movement_bhop_standup;
+extern VarBoolean movement_bhop_jump_on_ladder;
+extern VarBoolean movement_bhop_jump_in_water;
+extern VarBoolean movement_bhop_break_jump_animation;
+extern VarBoolean movement_bhop_notouch_ground_illusion;
+extern VarBoolean movement_bhop_multijump;
 extern VarBoolean movement_bhop_mode_noslowdown;
 extern VarInteger movement_bhop_mode_noslowdown_method;
 extern VarInteger movement_bhop_mode_noslowdown_factor;
@@ -88,11 +90,11 @@ private:
 
 	bool randomize_jump_pattern(bool is_onground);
 
+	bool standup_permission(float height);
+
 	bool m_remained_in_jump;
 
 	bool predicted_nextframe_on_ground(float frametime);
-
-	int m_fog_counter = 0;
 
 	void nsdn_speedhack();
 
@@ -102,6 +104,9 @@ private:
 	void reset_jump_time();
 
 	void standup();
+
+	void break_jump_animation();
+	void notouch_ground_illusion();
 
 	bool m_allow_multijump;
 	void multijump();

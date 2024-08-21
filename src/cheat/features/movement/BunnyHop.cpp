@@ -29,11 +29,13 @@
 #include "precompiled.h"
 
 VarInteger movement_bhop_mode("movement_bhop_mode", "Bunnyhop mode - legit or rage", BHOPMODE_Legit, BHOPMODE_Legit, BHOPMODE_Rage);
-VarBoolean movement_bhop_jump_on_ladder("movement_bhop_jump_on_ladder", "Jump if also on a ladder", true);
-VarBoolean movement_bhop_jump_in_water("movement_bhop_jump_in_water", "Jump if in water", true);
-VarBoolean movement_bhop_multijump("movement_bhop_multijump", "Jump with every click of the jump key", false);
 VarInteger movement_bhop_repeat_ms("movement_bhop_repeat_ms", "Interval which determines when we can jump again after we jumped", 0, 0, 1000);
 VarInteger movement_bhop_standup("movement_bhop_standup", "Enables stand up with selected distance", 0, 0, 20);
+VarBoolean movement_bhop_jump_on_ladder("movement_bhop_jump_on_ladder", "Jump if also on a ladder", true);
+VarBoolean movement_bhop_jump_in_water("movement_bhop_jump_in_water", "Jump if in water", true);
+VarBoolean movement_bhop_break_jump_animation("movement_bhop_break_jump_animation", "Breaks the jump animation with ducking", false);
+VarBoolean movement_bhop_notouch_ground_illusion("movement_bhop_notouch_ground_illusion", "", false);
+VarBoolean movement_bhop_multijump("movement_bhop_multijump", "Jump with every click of the jump key", false);
 VarBoolean movement_bhop_mode_noslowdown("movement_bhop_mode_noslowdown", "Enables bhop noslowdown", false);
 VarInteger movement_bhop_mode_noslowdown_method("movement_bhop_mode_noslowdown_method", "Noslowdown method", BHOPNSDN_EngineSpeed, BHOPNSDN_ServerSpeed, BHOPNSDN_EngineSpeed);
 VarInteger movement_bhop_mode_noslowdown_factor("movement_bhop_mode_noslowdown_factor", "How much to no-slowdown", 1, 1, 10);
@@ -51,7 +53,7 @@ void CMovementBunnyHop::update(float frametime)
 	}
 
 	int bhop_mode = movement_bhop_mode.get_value();
-
+	
 	bool is_surfing = CLocalState::the().is_surfing();
 	if (is_surfing)
 	{
@@ -78,8 +80,6 @@ void CMovementBunnyHop::update(float frametime)
 		return;
 	}
 
-	standup();
-
 	if (bhop_mode == BHOPMODE_Legit)
 	{
 		// unlike rage, legit bhop provides a lot of funcionality and settings that you can tweak.
@@ -90,6 +90,11 @@ void CMovementBunnyHop::update(float frametime)
 		// rage bhop is far more obvious but on the other hand, perfect.
 		rage_bhop(frametime);
 	}
+
+	standup();
+
+	// TODO: animation breakings and illusion from HPP
+	break_jump_animation();
 
 	multijump();
 }
@@ -162,34 +167,9 @@ void CMovementBunnyHop::legit_bhop(float frametime)
 
 			reset_jump_time();
 		}
-
-		// TODO: animation breakings and illusion from HPP
-		//if (m_fog_counter > 0 && !CClientMovementPacket::the().is_in(IN_DUCK) && CClientMovementPacket::the().is_in(IN_JUMP))
-		//{
-		//	CClientMovementPacket::the().set_button_bit(IN_DUCK, true);
-		//}
-
-		//static int nFramesInDuck;
-
-		//if (m_fog_counter == 0)
-		//{
-		//	if (nFramesInDuck)
-		//	{
-		//		nFramesInDuck--;
-		//		CClientMovementPacket::the().set_button_bit(IN_DUCK, true);
-		//	}
-		//}
-		//else
-		//{
-		//	// Minimum frames for change to duck state
-		//	nFramesInDuck = 2;
-		//}
-
-		m_fog_counter++;
 	}
 	else
 	{
-		m_fog_counter = false;
 		if (m_remained_in_jump)
 		{
 			if (!CClientMovementPacket::the().set_button_bit_atomic(IN_JUMP))
@@ -263,6 +243,100 @@ bool CMovementBunnyHop::randomize_jump_pattern(bool is_onground)
 	}
 
 	return false;
+}
+
+bool CMovementBunnyHop::standup_permission(float height)
+{
+	// The code seems bad...
+
+	static auto calc_fall_vel = [](const float height, const EPlayerHull& usehull)
+		{
+			const float frametime = CLocalState::the().get_engine_frametime();
+			const auto pmove = *CMemoryHookMgr::the().pmove().get();
+
+			float fallvel = pmove->flFallVelocity;
+
+			if (fallvel <= 0.f)
+				return fallvel;
+
+			float heightground = usehull == HULL_DUCKING ? height : CLocalState::the().get_ground_dist();
+
+			if (heightground == 0.f)
+				return fallvel;
+
+			const float gravity = pmove->movevars->gravity;
+
+			if (gravity == 0.f)
+				return fallvel;
+
+			float finalfallvel = 0.f;
+
+			while (heightground > 0.f)
+			{
+				finalfallvel = fallvel;
+				fallvel += gravity * frametime;
+				heightground -= fallvel * frametime;
+			}
+
+			return finalfallvel;
+		};
+
+	const auto origin = CLocalState::the().get_origin();
+	const auto velocity = CLocalState::the().get_local_velocity_vec();
+	const float height_ground_ducking = CGameUtil::the().compute_distance_to_ground(origin, 4096.0f, HULL_DUCKING);
+	const float height_ducking = height_ground_ducking - 18.0f; // PM_VEC_DUCK_HULL_MIN, see pm_shared.h
+	auto enginefuncs = CMemoryHookMgr::the().cl_enginefuncs();
+
+	// If at standup you will have damage, skip it
+	if (calc_fall_vel(height_ground_ducking, HULL_DUCKING) > PLAYER_MAX_SAFE_FALL_SPEED)
+	{
+		return false;
+	}
+
+	if (CLocalState::the().get_fall_velocity() <= 0.0f || height_ducking > height)
+	{
+		if (!velocity.IsZero2D())
+		{
+			// Cumpute predicted origin (without .z position)
+			Vector prediction = origin + velocity * CLocalState::the().get_engine_frametime();
+			prediction.z = origin.z;
+
+			// Check the barrier
+			const auto* trace = enginefuncs->pfnPM_TraceLine((float*)&origin, prediction, PM_TRACELINE_ANYVISIBLE, HULL_STANDING, -1);
+			if (trace->endpos != prediction)
+			{
+				// Check possible to standup jump
+				trace = enginefuncs->pfnPM_TraceLine((float*)&origin, prediction, PM_TRACELINE_ANYVISIBLE, HULL_DUCKING, -1);
+				if (trace->endpos == prediction)
+				{
+					return true;
+				}
+			}
+			else
+			{
+				// Fix fast bunny jumping without standup
+				Vector end(prediction);
+				end.z = -4096.f;
+				trace = enginefuncs->pfnPM_TraceLine((float*)&prediction, end, PM_TRACELINE_ANYVISIBLE, HULL_STANDING, -1);
+				const float prediction_height = prediction.z - trace->endpos.z;
+
+				// Check difference of height ground
+				if (prediction_height == CLocalState::the().get_ground_dist())
+				{
+					return false;
+				}
+
+				if (prediction_height < height)
+				{
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	return true;
 }
 
 bool CMovementBunnyHop::predicted_nextframe_on_ground(float frametime)
@@ -349,28 +423,60 @@ void CMovementBunnyHop::reset_jump_time()
 
 void CMovementBunnyHop::standup()
 {
-	const int units = movement_bhop_standup.get_value();
-	if (units == 0)
+	const float units = (float)movement_bhop_standup.get_value();
+	if (units == 0.0f)
 	{
 		return;
 	}
 
-	if (perfect_condition_for_jump())
-	{
-		return;
-	}
-
-	if (CLocalState::the().get_fall_velocity() <= 0.0f)
-	{
-		return;
-	}
-
-	if (CLocalState::the().get_ground_dist() > units)
+	if (!standup_permission(units))
 	{
 		return;
 	}
 
 	CClientMovementPacket::the().set_button_bit(IN_DUCK, true);
+}
+
+void CMovementBunnyHop::break_jump_animation()
+{
+	if (!movement_bhop_break_jump_animation.get_value())
+	{
+		return;
+	}
+
+	const bool is_ducked = CClientMovementPacket::the().is_in_modified(IN_DUCK);
+	const bool is_jumped = CClientMovementPacket::the().is_in_modified(IN_JUMP);
+
+	if (CLocalState::the().get_fog_counter() > 0 && !is_ducked && is_jumped)
+	{
+		CClientMovementPacket::the().set_button_bit(IN_DUCK, true);
+	}
+
+	notouch_ground_illusion();
+}
+
+void CMovementBunnyHop::notouch_ground_illusion()
+{
+	static int nFramesInDuck;
+
+	if (!movement_bhop_notouch_ground_illusion.get_value())
+	{
+		return;
+	}
+
+	if (CLocalState::the().get_fog_counter() == 0)
+	{
+		if (nFramesInDuck)
+		{
+			nFramesInDuck--;
+			CClientMovementPacket::the().set_button_bit(IN_DUCK, true);
+		}
+	}
+	else
+	{
+		// Minimum frames for change to duck state
+		nFramesInDuck = 2;
+	}
 }
 
 void CMovementBunnyHop::multijump()

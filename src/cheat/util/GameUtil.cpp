@@ -289,14 +289,14 @@ float CGameUtil::compute_ground_angle_for_origin(const Vector& origin, float tra
 	return CMath::the().rad2deg(acosf(tr->plane.normal.z));
 }
 
-float CGameUtil::compute_distance_to_ground(const Vector& origin, float trace_distance)
+float CGameUtil::compute_distance_to_ground(const Vector& origin, float trace_distance, const EPlayerHull& trace_hull)
 {
 	Vector trace_end = Vector(origin.x, origin.y, -trace_distance); // trace as back as this
 
 	auto cl_enginefuncs = CMemoryHookMgr::the().cl_enginefuncs();
 	
 	hl::pmtrace_t* tr = cl_enginefuncs->pfnPM_TraceLine(
-		(Vector)origin, trace_end, PM_TRACELINE_ANYVISIBLE, CLocalState::the().get_current_hull_tracing(), -1);
+		(Vector)origin, trace_end, PM_TRACELINE_ANYVISIBLE, trace_hull, -1);
 	
 	return origin.z - tr->endpos.z;
 }

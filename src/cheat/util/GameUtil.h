@@ -98,7 +98,7 @@ public:
 	std::string parse_viewmodel_name(hl::model_t* model);
 
 	float compute_ground_angle_for_origin(const Vector& origin, float trace_distance = 4096.0f);
-	float compute_distance_to_ground(const Vector& origin, float trace_distance = 4096.0f);
+	float compute_distance_to_ground(const Vector& origin, float trace_distance = 4096.0f, const EPlayerHull& trace_hull = HULL_STANDING);
 	float compute_edge_distance(const Vector& origin, float edge_trace_distance = MAXIMAL_DESIRED_EDGE_DIST);
 
 	// replica of CL_RecordHUDCommand

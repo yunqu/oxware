@@ -159,13 +159,14 @@ void MenuChilden::Movement::StrafeHelper::contents()
 	&CMovement::the().strafe_helper,
 	[]()
 	{
-		CUIMenuWidgets::the().add_slider("Accumulation", "%0.2f", &movement_strafe_helper_accumulation);//
+		CUIMenuWidgets::the().add_slider("Accumulation", "%0.2f", &movement_strafe_helper_accumulation, "off");
 		CUIMenuWidgets::the().add_checkbox("Accumulation on ground", &movement_strafe_helper_accumulation_on_ground);
 
 		CUIMenuWidgets::the().feature_enabled_section(
 		&movement_strafe_helper_strafe_with_mouse,
 		[]()
 		{
+			CUIMenuWidgets::the().add_slider("Efficiency", "%0.0f %%", &movement_strafe_helper_efficiency);
 			CUIMenuWidgets::the().add_listbox("Direction", &movement_strafe_helper_strafe_dir, { "Forward", "Right", "Back", "Left" });
 			CUIMenuWidgets::the().add_checkbox("Deduce automatically", &movement_strafe_helper_strafe_dir_auto);
 		}, "Strafe with mouse");

@@ -34,7 +34,6 @@ extern VarFloat movement_strafe_helper_accumulation;
 extern VarBoolean movement_strafe_helper_accumulation_on_ground;
 
 extern VarBoolean movement_strafe_helper_strafe_with_mouse;
-extern VarInteger movement_strafe_helper_efficiency;
 extern VarBoolean movement_strafe_helper_strafe_dir_auto;
 extern VarInteger movement_strafe_helper_strafe_dir;
 
@@ -56,9 +55,6 @@ private:
 private:
 	// 0 == left, 1 == right, 2 == forward
 	int m_mouse_direction = 0;
-
-	int m_bad_frames = 0;
-	int m_good_frames = 0;
 };
 
 #endif // STRAFEHELPER_H

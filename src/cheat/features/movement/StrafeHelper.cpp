@@ -28,7 +28,7 @@
 
 #include "precompiled.h"
 
-VarFloat movement_strafe_helper_accumulation("movement_strafe_helper_accumulation", "Adds YAW angles to your strafes making them more efficient", 1.0f, 0.01f, 3.0f);
+VarFloat movement_strafe_helper_accumulation("movement_strafe_helper_accumulation", "Adds YAW angles to your strafes making them more efficient", 1.0f, 0.0f, 3.0f);
 VarBoolean movement_strafe_helper_accumulation_on_ground("movement_strafe_helper_accumulation_on_ground", "Enables strafe accumulation when on ground", false);
 
 enum EStrafeDir
@@ -46,6 +46,7 @@ enum EMoveDirection
 
 // strafing with mouse
 VarBoolean movement_strafe_helper_strafe_with_mouse("movement_strafe_helper_strafe_with_mouse", "Performs moves with mouse. Works only forward/backward", false);
+VarInteger movement_strafe_helper_efficiency("movement_strafe_helper_efficiency", "The more strafes, the lower the efficiency", 100, 0, 100);
 VarBoolean movement_strafe_helper_strafe_dir_auto("movement_strafe_helper_strafe_dir_auto", "Automatically deduces strafe direction based on keys held", false);
 VarInteger movement_strafe_helper_strafe_dir("movement_strafe_helper_strafe_dir", "Strafe direction", MOVE_FORWARD, MOVE_FORWARD, MOVE_LEFT);
 
@@ -125,29 +126,50 @@ void CMovementStrafeHelper::update()
 	auto cl = CMemoryHookMgr::the().cl().get();
 
 	float x = CLocalState::the().get_viewangle_delta()[YAW];
+	int new_dir = -1;
 	if (x > 0)
 	{
-		m_mouse_direction = RIGHT;
+		new_dir = RIGHT;
 	}
 	else if (x < 0)
 	{
-		m_mouse_direction = LEFT;
+		new_dir = LEFT;
 	}
 	else // no mouse movement
 	{
-		m_mouse_direction = FORWARD;
+		new_dir = FORWARD;
 	}
 
-	const bool is_onground = CLocalState::the().is_on_ground();
+	const float frametime = CLocalState::the().get_engine_frametime();
+	const bool is_onground = CLocalState::the().get_fog_counter() * frametime > 0.1f; // wait another 100 milliseconds after grounding.
 
 	if (!(is_onground && !movement_strafe_helper_accumulation_on_ground.get_value()))
 	{
+		// this is reset at the next check, we return it.
+		m_mouse_direction = new_dir;
+
 		correction();
 	}
 
 	if (is_onground && !CMovement::bunnyhop.is_active() && !CMovement::gs.is_active())
 	{
+		m_frames = 0;
+		m_mouse_direction = FORWARD;
 		return;
+	}
+
+	if (new_dir != m_mouse_direction)
+	{
+		m_frames++;
+
+		// we can't exactly make the required efficiency, at least i haven't found a way.
+		const float max_eff = (float)movement_strafe_helper_efficiency.get_value();
+		if (max_eff >= 100.0f || 100.0f - (100.0f * (m_frames * frametime * 10.0f)) <= max_eff)
+		{
+			m_mouse_direction = new_dir;
+			m_frames = 0;
+			m_strafe_count++;
+		}
 	}
 
 	if (movement_strafe_helper_strafe_with_mouse.get_value())
@@ -193,6 +215,7 @@ void CMovementStrafeHelper::render_debug()
 	CEngineFontRendering::the().render_debug("--- Strafe Helper ---");
 
 	CEngineFontRendering::the().render_debug("Mouse direction: {}", (int)m_mouse_direction);
+	CEngineFontRendering::the().render_debug("Strafe count: {}", (int)m_strafe_count);
 }
 
 void CMovementStrafeHelper::correction()

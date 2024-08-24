@@ -56,8 +56,9 @@ private:
 private:
 	// 0 == left, 1 == right, 2 == forward
 	int m_mouse_direction = 0;
-	int m_frames = 0;
-	int m_strafe_count = 0;
+
+	int m_bad_frames = 0;
+	int m_good_frames = 0;
 };
 
 #endif // STRAFEHELPER_H

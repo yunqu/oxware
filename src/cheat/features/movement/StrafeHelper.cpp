@@ -1,28 +1,28 @@
 /*
 *	OXWARE developed by oxiKKK
 *	Copyright (c) 2023
-* 
-*	This program is licensed under the MIT license. By downloading, copying, 
+*
+*	This program is licensed under the MIT license. By downloading, copying,
 *	installing or using this software you agree to this license.
 *
 *	License Agreement
 *
-*	Permission is hereby granted, free of charge, to any person obtaining a 
-*	copy of this software and associated documentation files (the "Software"), 
-*	to deal in the Software without restriction, including without limitation 
-*	the rights to use, copy, modify, merge, publish, distribute, sublicense, 
-*	and/or sell copies of the Software, and to permit persons to whom the 
+*	Permission is hereby granted, free of charge, to any person obtaining a
+*	copy of this software and associated documentation files (the "Software"),
+*	to deal in the Software without restriction, including without limitation
+*	the rights to use, copy, modify, merge, publish, distribute, sublicense,
+*	and/or sell copies of the Software, and to permit persons to whom the
 *	Software is furnished to do so, subject to the following conditions:
 *
-*	The above copyright notice and this permission notice shall be included 
-*	in all copies or substantial portions of the Software. 
+*	The above copyright notice and this permission notice shall be included
+*	in all copies or substantial portions of the Software.
 *
-*	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-*	OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
-*	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL 
-*	THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
-*	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
-*	FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
+*	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+*	OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+*	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+*	THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+*	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+*	FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 *	IN THE SOFTWARE.
 */
 
@@ -58,20 +58,20 @@ struct move_direction_t
 
 // the "forward" strafe is always no strafe, so we zero everything
 static const std::array<std::array<move_direction_t, 2>, 4> g_move_dirs =
-{{
-	// MOVE_FORWARD
-	// forward and back vector is FORWARD & BACK
-	// side vectors are LEFT & RIGHT
-	{
-		move_direction_t( // STRAFE RIGHT
-			false, true, false, false,
-			250, 0
-		),
-		move_direction_t( // STRAFE LEFT
-			false, false, false, true,
-			-250, 0
-		),
-	},
+{ {
+		// MOVE_FORWARD
+		// forward and back vector is FORWARD & BACK
+		// side vectors are LEFT & RIGHT
+		{
+			move_direction_t( // STRAFE RIGHT
+				false, true, false, false,
+				250, 0
+			),
+			move_direction_t( // STRAFE LEFT
+				false, false, false, true,
+				-250, 0
+			),
+		},
 	// MOVE_RIGHT
 	// forward and back vector is RIGHT & LEFT
 	// side vectors are FORWARD & BACK
@@ -90,7 +90,7 @@ static const std::array<std::array<move_direction_t, 2>, 4> g_move_dirs =
 	// side vectors are RIGHT & LEFT
 	{
 		move_direction_t( // STRAFE RIGHT
-			false, true, false, true,
+			false, false, false, true,
 			-250, 0
 		),
 		move_direction_t( // STRAFE LEFT
@@ -112,7 +112,7 @@ static const std::array<std::array<move_direction_t, 2>, 4> g_move_dirs =
 		),
 	},
 
-}};
+} };
 
 void CMovementStrafeHelper::update()
 {
@@ -141,41 +141,57 @@ void CMovementStrafeHelper::update()
 	}
 
 	const float frametime = CLocalState::the().get_engine_frametime();
-	const bool is_onground = CLocalState::the().get_fog_counter() * frametime > 0.1f; // wait another 100 milliseconds after grounding.
+	const bool is_onground = CLocalState::the().is_on_ground();
 
-	if (!(is_onground && !movement_strafe_helper_accumulation_on_ground.get_value()))
+	if (is_onground)
 	{
-		// this is reset at the next check, we return it.
-		m_mouse_direction = new_dir;
+		m_bad_frames = m_good_frames = 0;
 
-		correction();
+		if (!CMovement::bunnyhop.is_active() && !CMovement::gs.is_active())
+		{
+			if (movement_strafe_helper_accumulation_on_ground.get_value())
+			{
+				m_mouse_direction = new_dir;
+
+				correction();
+			}
+			else
+			{
+				m_mouse_direction = FORWARD;
+			}
+
+			return;
+		}
 	}
-
-	if (is_onground && !CMovement::bunnyhop.is_active() && !CMovement::gs.is_active())
+	else
 	{
-		m_frames = 0;
-		m_mouse_direction = FORWARD;
-		return;
+		correction();
 	}
 
 	if (new_dir != m_mouse_direction)
 	{
-		m_frames++;
-
 		// we can't exactly make the required efficiency, at least i haven't found a way.
 		const float max_eff = (float)movement_strafe_helper_efficiency.get_value();
-		if (max_eff >= 100.0f || 100.0f - (100.0f * (m_frames * frametime * 10.0f)) <= max_eff)
+		if (max_eff >= 100.0f || CMovement::gs.is_active() || 100.0f - (100.0f * (m_bad_frames * frametime * 10.0f)) <= max_eff)
 		{
 			m_mouse_direction = new_dir;
-			m_frames = 0;
-			m_strafe_count++;
 		}
+		else
+		{
+			m_good_frames = 0;
+			m_bad_frames++;
+		}
+	}
+	else if (new_dir != FORWARD)
+	{
+		m_bad_frames = 0;
+		m_good_frames++;
 	}
 
 	if (movement_strafe_helper_strafe_with_mouse.get_value())
 	{
 		EMoveDirection wanted_dir;
-		
+
 		if (!movement_strafe_helper_strafe_dir_auto.get_value())
 		{
 			wanted_dir = (EMoveDirection)movement_strafe_helper_strafe_dir.get_value();
@@ -215,7 +231,6 @@ void CMovementStrafeHelper::render_debug()
 	CEngineFontRendering::the().render_debug("--- Strafe Helper ---");
 
 	CEngineFontRendering::the().render_debug("Mouse direction: {}", (int)m_mouse_direction);
-	CEngineFontRendering::the().render_debug("Strafe count: {}", (int)m_strafe_count);
 }
 
 void CMovementStrafeHelper::correction()

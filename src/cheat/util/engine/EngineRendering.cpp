@@ -165,6 +165,7 @@ void CEngineFontRendering::render_information()
 
 	render_debug("--- Miscellaneous ---");
 	
+	double frametime = CLocalState::the().get_engine_frametime();
 	float gnd_dist = CLocalState::the().get_ground_dist();
 	float edge_dist = CLocalState::the().get_edge_dist();
 	float gnd_angle = CLocalState::the().get_ground_angle();
@@ -190,6 +191,7 @@ void CEngineFontRendering::render_information()
 
 	float movespeed = sqrt((cmd->forwardmove * cmd->forwardmove) + (cmd->sidemove * cmd->sidemove) + (cmd->upmove * cmd->upmove));
 
+	render_debug("frametime: {:0.3}", frametime);;
 	render_debug("Acceleration: {:0.3f} u/frame", rolling_accel);
 	render_debug("Ground distance: {:0.3f} units", gnd_dist);
 	render_debug("Edge distance: {:0.3f} units", edge_dist);

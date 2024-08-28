@@ -35,6 +35,7 @@ void MenuChilden::Rendering::FieldOfView::contents()
 	[]()
 	{
 		CUIMenuWidgets::the().add_slider("FOV scale", "%0.1fx", &custom_fov_value);
+		CUIMenuWidgets::the().add_slider("FOV based on speed", "%0.1fx", &custom_fov_based_speed, "off");
 	});
 }
 

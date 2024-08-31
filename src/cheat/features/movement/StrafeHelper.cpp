@@ -135,6 +135,10 @@ void CMovementStrafeHelper::update()
 	{
 		new_dir = LEFT;
 	}
+	else if (CLocalState::the().is_surfing())
+	{
+		new_dir = m_mouse_direction;
+	}
 	else // no mouse movement
 	{
 		new_dir = FORWARD;

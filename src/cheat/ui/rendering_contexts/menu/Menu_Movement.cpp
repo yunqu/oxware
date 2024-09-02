@@ -114,6 +114,7 @@ void MenuChilden::Movement::GroundStrafe::contents()
 		}
 		else if (movement_gs_mode.get_value() == 1) // rage
 		{
+			CUIMenuWidgets::the().add_checkbox("Jump animation", &movement_gs_rage_jump_animation);
 			CUIMenuWidgets::the().add_description_text(
 				"Rage bhop is highly obviously to someone, who analyzes your demo - be careful where you use it. "
 				"\n\nHowever, it suits well for HVH scenarious or simply for servers where no one cares about bhop hacks. "

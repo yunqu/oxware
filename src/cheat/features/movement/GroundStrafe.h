@@ -38,6 +38,7 @@ extern VarInteger movement_gs_legit_ground_dist_min;
 extern VarInteger movement_gs_legit_ground_dist_max;
 extern VarInteger movement_gs_legit_efficiency;
 extern VarInteger movement_gs_legit_scroll_density;
+extern VarBoolean movement_gs_rage_jump_animation;
 
 enum EGSEfficiency
 {

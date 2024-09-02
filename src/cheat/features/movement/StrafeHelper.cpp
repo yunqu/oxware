@@ -116,7 +116,7 @@ static const std::array<std::array<move_direction_t, 2>, 4> g_move_dirs =
 
 void CMovementStrafeHelper::update()
 {
-	bool is_onladder = CLocalState::the().is_on_ladder();
+	const bool is_onladder = CLocalState::the().is_on_ladder();
 	if (is_onladder)
 	{
 		return;
@@ -124,6 +124,7 @@ void CMovementStrafeHelper::update()
 
 	auto cmd = CClientMovementPacket::the().get_cmd();
 	auto cl = CMemoryHookMgr::the().cl().get();
+	const bool is_surfing = CLocalState::the().is_surfing();
 
 	float x = CLocalState::the().get_viewangle_delta()[YAW];
 	int new_dir = -1;
@@ -135,6 +136,10 @@ void CMovementStrafeHelper::update()
 	{
 		new_dir = LEFT;
 	}
+	else if (is_surfing)
+	{
+		new_dir = m_mouse_direction;
+	}
 	else // no mouse movement
 	{
 		new_dir = FORWARD;
@@ -143,7 +148,7 @@ void CMovementStrafeHelper::update()
 	const float frametime = CLocalState::the().get_engine_frametime();
 	const bool is_onground = CLocalState::the().is_on_ground();
 
-	if (is_onground)
+	if (is_onground && !is_surfing)
 	{
 		m_bad_frames = m_good_frames = 0;
 

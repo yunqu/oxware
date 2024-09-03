@@ -464,6 +464,13 @@ struct R_StudioDrawPlayer_FnDetour_t final : public GenericMemoryFnDetour_cdecl<
 	static int R_StudioDrawPlayer(int flags, hl::entity_state_t* pplayer);
 };
 
+// void __cdecl CStudioModelRenderer__StudioRenderModel(CStudioModelRenderer *const this)
+struct CStudioModelRenderer__StudioRenderModel_FnDetour_t final : public GenericMemoryFnDetour_thiscall<void, void*>
+{
+	bool install();
+	static void __thiscall CStudioModelRenderer__StudioRenderModel(void* ecx);
+};
+
 // void CL_SendConsistencyInfo(sizebuf_t* msg)
 struct CL_SendConsistencyInfo_FnDetour_t final : public GenericMemoryFnDetour_cdecl<int, hl::sizebuf_t*>
 {
@@ -644,6 +651,7 @@ public:
 	inline auto& CGame__AppActivate() { static CGame__AppActivate_FnDetour_t fnhook; return fnhook; }
 	inline auto& CHudAmmo__DrawCrosshair() { static CHudAmmo__DrawCrosshair_FnDetour_t fnhook; return fnhook; }
 	inline auto& R_StudioDrawPlayer() { static R_StudioDrawPlayer_FnDetour_t fnhook; return fnhook; }
+	inline auto& CStudioModelRenderer__StudioRenderModel() { static CStudioModelRenderer__StudioRenderModel_FnDetour_t fnhook; return fnhook; }
 	inline auto& CL_SendConsistencyInfo() { static CL_SendConsistencyInfo_FnDetour_t fnhook; return fnhook; }
 	inline auto& SCR_DrawFPS() { static SCR_DrawFPS_FnDetour_t fnhook; return fnhook; }
 	inline auto& Cmd_AddMallocCommand() { static Cmd_AddMallocCommand_FnDetour_t fnhook; return fnhook; }

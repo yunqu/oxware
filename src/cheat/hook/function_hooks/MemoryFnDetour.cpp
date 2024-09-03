@@ -77,6 +77,7 @@ bool CMemoryFnDetourMgr::install_hooks()
 	CGame__AppActivate().install();
 	CHudAmmo__DrawCrosshair().install();
 	R_StudioDrawPlayer().install();
+	CStudioModelRenderer__StudioRenderModel().install();
 	CL_SendConsistencyInfo().install();
 	SCR_DrawFPS().install();
 	Cmd_AddMallocCommand().install();
@@ -156,6 +157,7 @@ void CMemoryFnDetourMgr::uninstall_hooks()
 	CGame__AppActivate().uninstall();
 	CHudAmmo__DrawCrosshair().uninstall();
 	R_StudioDrawPlayer().uninstall();
+	CStudioModelRenderer__StudioRenderModel().uninstall();
 	CL_SendConsistencyInfo().uninstall();
 	SCR_DrawFPS().uninstall();
 	Cmd_AddMallocCommand().uninstall();
@@ -1030,6 +1032,24 @@ int R_StudioDrawPlayer_FnDetour_t::R_StudioDrawPlayer(int flags, hl::entity_stat
 	}
 
 	return CMemoryFnDetourMgr::the().R_StudioDrawPlayer().call(flags, pplayer);
+}
+
+//---------------------------------------------------------------------------------
+
+bool CStudioModelRenderer__StudioRenderModel_FnDetour_t::install()
+{
+	initialize("CStudioModelRenderer::StudioRenderModel", L"client.dll");
+	return detour_using_memory_address((uintptr_t*)CStudioModelRenderer__StudioRenderModel, (uintptr_t*)CMemoryHookMgr::the().g_StudioModelRenderer().get()->StudioRenderModel);
+}
+
+void CStudioModelRenderer__StudioRenderModel_FnDetour_t::CStudioModelRenderer__StudioRenderModel(void* ecx)
+{
+	if (CGameUtil::the().is_fully_connected())
+	{
+		CHitBoxTracker::the().update((hl::CStudioModelRenderer*)ecx);
+	}
+	
+	CMemoryFnDetourMgr::the().CStudioModelRenderer__StudioRenderModel().call(ecx);
 }
 
 //---------------------------------------------------------------------------------

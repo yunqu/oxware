@@ -420,6 +420,9 @@
     <ClCompile Include="features\BulletTrace.cpp">
       <Filter>src\features\world</Filter>
     </ClCompile>
+    <ClCompile Include="game\HitBoxTracker.cpp">
+      <Filter>src\game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="precompiled.h" />
@@ -731,6 +734,9 @@
     </ClInclude>
     <ClInclude Include="features\BulletTrace.h">
       <Filter>src\features\world</Filter>
+    </ClInclude>
+    <ClInclude Include="game\HitBoxTracker.h">
+      <Filter>src\game</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

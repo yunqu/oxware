@@ -256,6 +256,7 @@
     <ClCompile Include="game\GenericEnt.cpp" />
     <ClCompile Include="game\GenericMdl.cpp" />
     <ClCompile Include="game\GenericPlayer.cpp" />
+    <ClCompile Include="game\HitBoxTracker.cpp" />
     <ClCompile Include="game\NetchanSequenceHistory.cpp" />
     <ClCompile Include="game\ParticleManMiniMemEmulation.cpp" />
     <ClCompile Include="game\VideoModeUtil.cpp" />
@@ -384,6 +385,7 @@
     <ClInclude Include="game\GenericEnt.h" />
     <ClInclude Include="game\GenericMdl.h" />
     <ClInclude Include="game\GenericPlayer.h" />
+    <ClInclude Include="game\HitBoxTracker.h" />
     <ClInclude Include="game\NetchanSequenceHistory.h" />
     <ClInclude Include="game\ParticleManMiniMemEmulation.h" />
     <ClInclude Include="game\VideoModeUtil.h" />

@@ -39,9 +39,6 @@ void CHitBoxTracker::update(hl::CStudioModelRenderer* pstudio_model_renderer)
 
 	m_pstudio_model_renderer = pstudio_model_renderer;
 
-	//get_entity_hitboxes();
-
-	static hl::cvar_t* cl_minmodels;
 	if (!cl_minmodels)
 	{
 		cl_minmodels = CGoldSrcCommandMgr::the().get_cvar("cl_minmodels");
@@ -51,72 +48,9 @@ void CHitBoxTracker::update(hl::CStudioModelRenderer* pstudio_model_renderer)
 			return;
 		}
 	}
-
-	const float minmodels_backup = cl_minmodels->value;
-
-	cl_minmodels->value = 0;
-	get_player_hitboxes(false);
-
-	cl_minmodels->value = 1;
-	get_player_hitboxes(true);
-
-	cl_minmodels->value = minmodels_backup;
-}
-
-std::optional<std::vector<StudioHitBox>*> CHitBoxTracker::get_local_hitboxes()
-{
-	int local_index = CMemoryHookMgr::the().cl().get()->playernum + 1;
-
-	try
-	{
-		return std::make_optional(&m_hitboxes[local_index]);
-	}
-	catch (...)
-	{
-		CConsole::the().derror("Non-existent local player index: {}", local_index);
-		return std::nullopt;
-	}
-}
-
-std::optional<std::vector<StudioHitBox>*> CHitBoxTracker::get_hitboxes_by_id(int index)
-{
-	try
-	{
-		return std::make_optional(&m_hitboxes[index]);
-	}
-	catch (...)
-	{
-		CConsole::the().derror("Non-existent player index: {}", index);
-		return std::nullopt;
-	}
-}
-
-std::optional<StudioHitBox(*)[hl::NUM_HITBOXES]> CHitBoxTracker::get_local_min_hitboxes()
-{
-	int local_index = CMemoryHookMgr::the().cl().get()->playernum + 1;
-
-	try
-	{
-		return std::make_optional(&m_min_hitboxes[local_index]);
-	}
-	catch (...)
-	{
-		CConsole::the().derror("Non-existent local player index: {}", local_index);
-		return std::nullopt;
-	}
-}
-
-std::optional<StudioHitBox(*)[hl::NUM_HITBOXES]> CHitBoxTracker::get_min_hitboxes_by_id(int index)
-{
-	try
-	{
-		return std::make_optional(&m_min_hitboxes[index]);
-	}
-	catch (...)
-	{
-		CConsole::the().derror("Non-existent player index: {}", index);
-		return std::nullopt;
-	}
+	
+	//get_entity_hitboxes();
+	get_player_hitboxes();
 }
 
 hl::mstudiobbox_t* CHitBoxTracker::get_pbbox()
@@ -159,7 +93,7 @@ void CHitBoxTracker::get_entity_hitboxes()
 	}
 
 	auto cl = CMemoryHookMgr::the().cl().get();
-	if (ent->index > 0 && ent->index <= cl->maxclients)
+	if (ent->index <= cl->maxclients)
 	{
 		return;
 	}
@@ -184,7 +118,7 @@ void CHitBoxTracker::get_entity_hitboxes()
 	}
 }
 
-void CHitBoxTracker::get_player_hitboxes(const bool minmodels)
+void CHitBoxTracker::get_player_hitboxes()
 {
 	auto pstudiohdr = m_pstudio_model_renderer->m_pStudioHeader;
 	if (!pstudiohdr || !pstudiohdr->numbodyparts)
@@ -215,54 +149,16 @@ void CHitBoxTracker::get_player_hitboxes(const bool minmodels)
 		return;
 	}
 
-	if (minmodels)
+	auto& hitboxes = m_hitboxes[ent->index];
+
+	hitboxes.clear();
+	for (int i = 0; i < pstudiohdr->numhitboxes; i++)
 	{
-		if (pstudiohdr->numhitboxes > hl::NUM_HITBOXES)
-		{
-			return;
-		}
+		auto& bbox = pbbox[i];
+		auto matrix = (*m_pstudio_model_renderer->m_pbonetransform)[bbox.bone];
 
-		auto& hitboxes = m_min_hitboxes[ent->index];
-
-		for (int i = 0; i < pstudiohdr->numhitboxes; i++)
-		{
-			auto& bbox = pbbox[i];
-			auto matrix = (*m_pstudio_model_renderer->m_pbonetransform)[bbox.bone];
-
-			auto& hitbox = hitboxes[i];
-			update_hitbox(matrix, bbox, hitbox);
-		}
-
-		if (pstudiohdr->numhitboxes < hl::NUM_HITBOXES)
-		{
-			for (auto i = pstudiohdr->numhitboxes; i < hl::NUM_HITBOXES; i++)
-			{
-				auto& hitbox = hitboxes[i];
-
-				hitbox.min.Clear();
-				hitbox.max.Clear();
-				hitbox.origin.Clear();
-
-				for (auto j = 0; j < 8; j++)
-				{
-					hitbox.points[j].Clear();
-				}
-			}
-		}
-	}
-	else
-	{
-		auto& hitboxes = m_hitboxes[ent->index];
-
-		hitboxes.clear();
-		for (int i = 0; i < pstudiohdr->numhitboxes; i++)
-		{
-			auto& bbox = pbbox[i];
-			auto matrix = (*m_pstudio_model_renderer->m_pbonetransform)[bbox.bone];
-
-			StudioHitBox hitbox;
-			update_hitbox(matrix, bbox, hitbox);
-			hitboxes.push_back(hitbox);
-		}
+		StudioHitBox hitbox;
+		update_hitbox(matrix, bbox, hitbox);
+		hitboxes.push_back(hitbox);
 	}
 }

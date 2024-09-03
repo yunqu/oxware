@@ -35,8 +35,7 @@ struct StudioHitBox
 {
 	int group;
 
-	Vector min;
-	Vector max;
+	Vector min, max;
 	Vector origin;
 	Vector points[8];
 };
@@ -49,24 +48,24 @@ public:
 public:
 	void update(hl::CStudioModelRenderer* pstudio_model_renderer);
 
-	std::optional<std::vector<StudioHitBox>*> get_local_hitboxes();
-	std::optional<std::vector<StudioHitBox>*> get_hitboxes_by_id(int index);
-	
-	std::optional<StudioHitBox(*)[hl::NUM_HITBOXES]> get_local_min_hitboxes();
-	std::optional<StudioHitBox(*)[hl::NUM_HITBOXES]> get_min_hitboxes_by_id(int index);
+	inline const std::vector<StudioHitBox>& get_local_hitboxes() { return m_hitboxes[CMemoryHookMgr::the().cl().get()->playernum + 1]; }
+	inline const std::vector<StudioHitBox>& get_hitboxes_by_id(int index) { return m_hitboxes[(index > 0 && index <= CMemoryHookMgr::the().cl().get()->max_edicts) ? index : 1]; }
+
+	inline bool is_using_minmodels() { return cl_minmodels->value; }
 
 private:
 	hl::CStudioModelRenderer* m_pstudio_model_renderer = nullptr;
 
+	hl::cvar_t* cl_minmodels = nullptr;
+
 	std::vector<StudioHitBox> m_hitboxes[MAX_EDICTS];
-	StudioHitBox m_min_hitboxes[MAX_CLIENTS][hl::NUM_HITBOXES];
 
 	hl::mstudiobbox_t* get_pbbox();
 
 	void update_hitbox(const float(*matrix)[4], const hl::mstudiobbox_t& bbox, StudioHitBox& hitbox);
 
 	void get_entity_hitboxes();
-	void get_player_hitboxes(const bool minmodels);
+	void get_player_hitboxes();
 };
 
 #endif // !HITBOXTRACKER_H

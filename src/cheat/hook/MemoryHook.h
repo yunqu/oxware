@@ -386,6 +386,11 @@ struct pStudioAPI_MemoryHook final : public GenericMemoryHook<hl::r_studio_inter
 	void test_hook() override;
 };
 
+struct g_StudioModelRenderer_MemoryHook final : public GenericMemoryHook<hl::CStudioModelRenderer_VTable>
+{
+	bool install() override;
+};
+
 // cl_entity_t* currententity;
 struct currententity_MemoryHook final : public GenericMemoryHook<hl::cl_entity_t*>
 { 
@@ -468,6 +473,7 @@ public:
 	inline static auto& r_model() { static r_model_MemoryHook hook; return hook; };
 	inline static auto& pstudiohdr() { static pstudiohdr_MemoryHook hook; return hook; };
 	inline static auto& pStudioAPI() { static pStudioAPI_MemoryHook hook; return hook; };
+	inline static auto& g_StudioModelRenderer() { static g_StudioModelRenderer_MemoryHook hook; return hook; };
 	inline static auto& currententity() { static currententity_MemoryHook hook; return hook; };
 	inline static auto& host_framecount() { static host_framecount_MemoryHook hook; return hook; };
 	inline static auto& realtime() { static realtime_MemoryHook hook; return hook; };

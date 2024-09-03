@@ -329,25 +329,13 @@ void CModelChams::render_playerhead_hitbox()
 	}
 
 	auto engine_studio_api = CMemoryHookMgr::the().engine_studio_api().get();
+	auto ent = engine_studio_api->GetCurrentEntity();
 
-	if (engine_studio_api->GetCurrentEntity()->player == false)
+	if (!ent || !ent->player)
 	{
 		return;
 	}
 
-	auto pstudiohdr = get_currently_rendered_model_header();
-	if (!pstudiohdr)
-	{
-		// our hooks aren't initialized yet. Strange...
-		return;
-	}
-
-	// light or bone, doesn't matter.
-	float(*couple_of_pointers)[MAXSTUDIOBONES][3][4] = (float(*)[MAXSTUDIOBONES][3][4])engine_studio_api->StudioGetBoneTransform();
-
-	auto bbox = (hl::mstudiobbox_t*)((byte*)pstudiohdr + pstudiohdr->hitboxindex);
-
-	Vector bbox_transformator, p[8];
 
 	CColor clr = mdlchams_head_box_color.get_value();
 
@@ -358,7 +346,7 @@ void CModelChams::render_playerhead_hitbox()
 
 	glDisable(GL_TEXTURE_2D);
 
-	for (int i = 0; i < pstudiohdr->numhitboxes; i++)
+	for (auto& hitbox : CHitBoxTracker::the().get_hitboxes_by_id(ent->index))
 	{
 		// the infamous head hitbox
 		//
@@ -368,18 +356,8 @@ void CModelChams::render_playerhead_hitbox()
 		// Therefor there isn't really a proper way to look for a head hitbox however, from what I've
 		// see and from my testing, this works for most regular models, and for the majority of zombie
 		// models, but that really depends..
-		if (bbox[i].group == hl::HITGROUP_HEAD)
+		if (hitbox.group == hl::HITGROUP_HEAD)
 		{
-			// get all cube vertices
-			for (int j = 0; j < 8; j++)
-			{
-				bbox_transformator[0] = (j & 1) ? bbox[i].bbmin[0] : bbox[i].bbmax[0];
-				bbox_transformator[1] = (j & 2) ? bbox[i].bbmin[1] : bbox[i].bbmax[1];
-				bbox_transformator[2] = (j & 4) ? bbox[i].bbmin[2] : bbox[i].bbmax[2];
-
-				CMath::the().vector_transform(bbox_transformator, (*couple_of_pointers)[bbox[i].bone], p[j]);
-			}
-
 			glBegin(GL_QUADS);
 			
 			glColor3f(clr.r, clr.g, clr.b);
@@ -387,10 +365,10 @@ void CModelChams::render_playerhead_hitbox()
 			// render all faces of a cube
 			for (int j = 0; j < 6; j++)
 			{
-				glVertex3fv(p[g_cubic_face_translation[j][0]]);
-				glVertex3fv(p[g_cubic_face_translation[j][1]]);
-				glVertex3fv(p[g_cubic_face_translation[j][2]]);
-				glVertex3fv(p[g_cubic_face_translation[j][3]]);
+				glVertex3fv(hitbox.points[g_cubic_face_translation[j][0]]);
+				glVertex3fv(hitbox.points[g_cubic_face_translation[j][1]]);
+				glVertex3fv(hitbox.points[g_cubic_face_translation[j][2]]);
+				glVertex3fv(hitbox.points[g_cubic_face_translation[j][3]]);
 			}
 
 			glEnd();

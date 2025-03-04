@@ -94,7 +94,7 @@ void CLoaderUI::render_tab_main()
 
 		if (g_gui_widgets_i->add_button("Start cheat", { -1, window_size.y / 2 - 20 }, !m_allow_to_load_again, BUTTONFLAG_CenterLabel))
 		{
-			static const char* s_exe_names[] = { "cs.exe", "hl.exe", "cstrike.exe" };
+			static const char* s_exe_names[] = { "hl.exe", "cs.exe", "cstrike.exe" };
 
 			// try different names
 			bool success = false;

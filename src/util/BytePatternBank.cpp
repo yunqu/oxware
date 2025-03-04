@@ -178,6 +178,8 @@ void CBytePatternBank::decide_on_build_container()
 		// we have the exact build available, choose it
 		switch (m_current_build)
 		{
+			// If you add a new build, you need to register it here!!!
+			case 10210: m_active_bytepattern_container = &bytepattern_container_10210; break;
 			case 8684: m_active_bytepattern_container = &bytepattern_container_8684; break;
 			case 4554: m_active_bytepattern_container = &bytepattern_container_4554; break;
 			case 3266: m_active_bytepattern_container = &bytepattern_container_3266; break;

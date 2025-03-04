@@ -103,6 +103,7 @@ CBytePatternBank::CBytePatternBank()
 	g_bytepattern_bank_i = this;
 
 	// If you add a new build, you need to register it here!!!
+	m_supported_builds.insert(10210);
 	m_supported_builds.insert(8684);
 	m_supported_builds.insert(4554);
 	m_supported_builds.insert(3266);

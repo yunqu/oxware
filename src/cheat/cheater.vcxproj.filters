@@ -131,9 +131,6 @@
     <ClCompile Include="..\public\BaseVariable.cpp">
       <Filter>public</Filter>
     </ClCompile>
-    <ClCompile Include="features\BulletTrace.cpp">
-      <Filter>src\features</Filter>
-    </ClCompile>
     <ClCompile Include="..\public\code_performace_profile.cpp">
       <Filter>public</Filter>
     </ClCompile>
@@ -414,6 +411,18 @@
     <ClCompile Include="ui\ThemeEditor.cpp">
       <Filter>src\UI\other</Filter>
     </ClCompile>
+    <ClCompile Include="features\InconnectFpsUnlocker.cpp">
+      <Filter>src\features\screen</Filter>
+    </ClCompile>
+    <ClCompile Include="features\FreeCamera.cpp">
+      <Filter>src\features\world</Filter>
+    </ClCompile>
+    <ClCompile Include="features\BulletTrace.cpp">
+      <Filter>src\features\world</Filter>
+    </ClCompile>
+    <ClCompile Include="game\HitBoxTracker.cpp">
+      <Filter>src\game</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="precompiled.h" />
@@ -464,9 +473,6 @@
     </ClInclude>
     <ClInclude Include="..\public\BaseVariable.h">
       <Filter>public</Filter>
-    </ClInclude>
-    <ClInclude Include="features\BulletTrace.h">
-      <Filter>src\features</Filter>
     </ClInclude>
     <ClInclude Include="..\public\code_performace_profile.h">
       <Filter>public</Filter>
@@ -719,6 +725,18 @@
     </ClInclude>
     <ClInclude Include="ui\ThemeEditor.h">
       <Filter>src\UI\other</Filter>
+    </ClInclude>
+    <ClInclude Include="features\InconnectFpsUnlocker.h">
+      <Filter>src\features\screen</Filter>
+    </ClInclude>
+    <ClInclude Include="features\FreeCamera.h">
+      <Filter>src\features\world</Filter>
+    </ClInclude>
+    <ClInclude Include="features\BulletTrace.h">
+      <Filter>src\features\world</Filter>
+    </ClInclude>
+    <ClInclude Include="game\HitBoxTracker.h">
+      <Filter>src\game</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

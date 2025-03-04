@@ -31,7 +31,9 @@
 #pragma once
 
 extern VarBoolean viewmodel_offset_enable;
-extern VarFloat viewmodel_offset_value;
+extern VarFloat viewmodel_offset_x;
+extern VarFloat viewmodel_offset_y;
+extern VarFloat viewmodel_offset_z;
 
 class CViewmodelOffset
 {

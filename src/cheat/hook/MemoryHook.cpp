@@ -53,6 +53,7 @@ bool CMemoryHookMgr::install_hooks()
 	if (!r_model().install()) return false;
 	if (!pstudiohdr().install()) return false;
 	if (!pStudioAPI().install()) return false;
+	if (!g_StudioModelRenderer().install()) return false;
 	if (!currententity().install()) return false;
 	if (!host_framecount().install()) return false;
 	if (!realtime().install()) return false;
@@ -413,6 +414,14 @@ void pStudioAPI_MemoryHook::test_hook()
 			auto pStudioAPI = *p;
 			return pStudioAPI->StudioDrawModel && pStudioAPI->StudioDrawPlayer && pStudioAPI->version == STUDIO_INTERFACE_VERSION;
 		});
+}
+
+//-----------------------------------------------------------------------------
+
+bool g_StudioModelRenderer_MemoryHook::install()
+{
+	initialize("g_StudioModelRenderer", L"client.dll");
+	return install_using_bytepattern(1);
 }
 
 //-----------------------------------------------------------------------------

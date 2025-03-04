@@ -30,6 +30,7 @@
 
 bool CMemoryFnDetourMgr::install_hooks()
 {
+	Host_FilterTime().install();
 	_Host_Frame().install();
 
 	// just to be absolutely safe that the engine doesn't call a function in a middle of us deouring it.
@@ -60,7 +61,7 @@ bool CMemoryFnDetourMgr::install_hooks()
 		R_ForceCVars().install(); // there isn't such function, e.g. in 3266
 	}
 	V_CalcRefdef().install();
-	//EV_HLDM_FireBullets().install();
+	EV_HLDM_FireBullets().install();
 	HUD_Redraw().install();
 	R_GLStudioDrawPoints().install();
 	V_FadeAlpha().install();
@@ -76,6 +77,7 @@ bool CMemoryFnDetourMgr::install_hooks()
 	CGame__AppActivate().install();
 	CHudAmmo__DrawCrosshair().install();
 	R_StudioDrawPlayer().install();
+	CStudioModelRenderer__StudioRenderModel().install();
 	CL_SendConsistencyInfo().install();
 	SCR_DrawFPS().install();
 	Cmd_AddMallocCommand().install();
@@ -133,7 +135,7 @@ void CMemoryFnDetourMgr::uninstall_hooks()
 		R_ForceCVars().uninstall(); // there isn't such function, e.g. in 3266
 	}
 	V_CalcRefdef().uninstall();
-	//EV_HLDM_FireBullets().uninstall();
+	EV_HLDM_FireBullets().uninstall();
 	HUD_Redraw().uninstall();
 	R_GLStudioDrawPoints().uninstall();
 	V_FadeAlpha().uninstall();
@@ -155,6 +157,7 @@ void CMemoryFnDetourMgr::uninstall_hooks()
 	CGame__AppActivate().uninstall();
 	CHudAmmo__DrawCrosshair().uninstall();
 	R_StudioDrawPlayer().uninstall();
+	CStudioModelRenderer__StudioRenderModel().uninstall();
 	CL_SendConsistencyInfo().uninstall();
 	SCR_DrawFPS().uninstall();
 	Cmd_AddMallocCommand().uninstall();
@@ -181,6 +184,7 @@ void CMemoryFnDetourMgr::uninstall_hooks()
 
 	// must be unloaded at last, because of synchronizated cheat unload. see CEngineSynchronization for more info.
 	_Host_Frame().uninstall();
+	Host_FilterTime().uninstall();
 
 	m_unloading_hooks_mutex = false;
 }
@@ -395,13 +399,13 @@ void CL_CreateMove_FnDetour_t::CL_CreateMove(float frametime, hl::usercmd_t *cmd
 	{
 		CLocalState::the().update_clientmove(frametime, cmd);
 
+		CNetchanSequenceHistory::the().update();
+
 		// update if we're alive, connected, etc..
 		g_in_commands_i->update_activation_conditions();
 
-		if (!CGameUtil::the().is_spectator())
+		if (!CGameUtil::the().is_spectator() && CLocalState::the().local_player())
 		{
-			CNetchanSequenceHistory::the().update();
-
 			CClientMovementPacket::the().update_clientmove(cmd);
 
 			CEngineSpeedControl::the().update();
@@ -428,12 +432,32 @@ void CL_CreateMove_FnDetour_t::CL_CreateMove(float frametime, hl::usercmd_t *cmd
 			CUserMSGDetourMgr::the().ReceiveW_fn().call("ReceiveW", sizeof(uint8_t), &value);
 		}
 #endif
+		CFreeCamera::the().move(cmd);
 
 		if (debug_render_info.get_value())
 		{
 			CEngineFontRendering::the().render_information();
 		}
 	}
+}
+
+//---------------------------------------------------------------------------------
+
+bool Host_FilterTime_FnDetour_t::install()
+{
+	initialize("Host_FilterTime", L"hw.dll");
+	return detour_using_bytepattern((uintptr_t*)Host_FilterTime);
+}
+
+hl::qboolean Host_FilterTime_FnDetour_t::Host_FilterTime(float time)
+{
+	CInconnectFpsUnlocker::the().begin();
+
+	auto result = CMemoryFnDetourMgr::the().Host_FilterTime().call(time);
+
+	CInconnectFpsUnlocker::the().end();
+	
+	return result;
 }
 
 //---------------------------------------------------------------------------------
@@ -451,7 +475,14 @@ void _Host_Frame_FnDetour_t::_Host_Frame(float time)
 	bool is_connected = (CMemoryHookMgr::the().cls()->state == hl::ca_active);
 	if (was_connected != is_connected)
 	{
-		CGameEvents::the().on_connect();
+		if (is_connected)
+		{
+			CGameEvents::the().on_connected();
+		}
+		else
+		{
+			CGameEvents::the().on_disconnected();
+		}
 		was_connected = is_connected;
 	}
 
@@ -575,6 +606,8 @@ void V_CalcRefdef_FnDetour_t::V_CalcRefdef(hl::ref_params_t *pparams)
 	if (!CAntiScreen::the().hide_visuals() && !CPanic::the().panicking())
 	{
 		CThirdPerson::the().update(pparams);
+
+		CFreeCamera::the().update(pparams);
 
 		// no-recoil
 		//pparams->viewangles = pparams->cl_viewangles + pparams->punchangle;
@@ -1003,6 +1036,24 @@ int R_StudioDrawPlayer_FnDetour_t::R_StudioDrawPlayer(int flags, hl::entity_stat
 
 //---------------------------------------------------------------------------------
 
+bool CStudioModelRenderer__StudioRenderModel_FnDetour_t::install()
+{
+	initialize("CStudioModelRenderer::StudioRenderModel", L"client.dll");
+	return detour_using_memory_address((uintptr_t*)CStudioModelRenderer__StudioRenderModel, (uintptr_t*)CMemoryHookMgr::the().g_StudioModelRenderer().get()->StudioRenderModel);
+}
+
+void CStudioModelRenderer__StudioRenderModel_FnDetour_t::CStudioModelRenderer__StudioRenderModel(void* ecx)
+{
+	if (CGameUtil::the().is_fully_connected())
+	{
+		CHitBoxTracker::the().update((hl::CStudioModelRenderer*)ecx);
+	}
+	
+	CMemoryFnDetourMgr::the().CStudioModelRenderer__StudioRenderModel().call(ecx);
+}
+
+//---------------------------------------------------------------------------------
+
 bool CL_SendConsistencyInfo_FnDetour_t::install()
 {
 	initialize("CL_SendConsistencyInfo", L"hw.dll");
@@ -1155,7 +1206,8 @@ int CL_IsThirdPerson_FnDetour_t::CL_IsThirdPerson()
 {
 	if (!CAntiScreen::the().hide_visuals() && !CPanic::the().panicking())
 	{
-		return CThirdPerson::the().thirdperson.is_active() && thirdperson_dist.get_value() != 0;
+		if ((CThirdPerson::the().thirdperson.is_active()) || freecam_enable.get_value())
+			return 1;
 	}
 
 	return CMemoryFnDetourMgr::the().CL_IsThirdPerson().call();
@@ -1226,6 +1278,8 @@ bool HUD_DrawTransparentTriangles_FnDetour_t::install()
 void HUD_DrawTransparentTriangles_FnDetour_t::HUD_DrawTransparentTriangles()
 {
 	CMemoryFnDetourMgr::the().HUD_DrawTransparentTriangles().call();
+
+	CBulletTrace::the().render();
 
 	auto iparticleman = CHLInterfaceHook::the().IParticleMan();
 	if (iparticleman)

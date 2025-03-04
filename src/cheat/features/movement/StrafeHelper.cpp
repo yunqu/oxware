@@ -1,34 +1,34 @@
 /*
 *	OXWARE developed by oxiKKK
 *	Copyright (c) 2023
-* 
-*	This program is licensed under the MIT license. By downloading, copying, 
+*
+*	This program is licensed under the MIT license. By downloading, copying,
 *	installing or using this software you agree to this license.
 *
 *	License Agreement
 *
-*	Permission is hereby granted, free of charge, to any person obtaining a 
-*	copy of this software and associated documentation files (the "Software"), 
-*	to deal in the Software without restriction, including without limitation 
-*	the rights to use, copy, modify, merge, publish, distribute, sublicense, 
-*	and/or sell copies of the Software, and to permit persons to whom the 
+*	Permission is hereby granted, free of charge, to any person obtaining a
+*	copy of this software and associated documentation files (the "Software"),
+*	to deal in the Software without restriction, including without limitation
+*	the rights to use, copy, modify, merge, publish, distribute, sublicense,
+*	and/or sell copies of the Software, and to permit persons to whom the
 *	Software is furnished to do so, subject to the following conditions:
 *
-*	The above copyright notice and this permission notice shall be included 
-*	in all copies or substantial portions of the Software. 
+*	The above copyright notice and this permission notice shall be included
+*	in all copies or substantial portions of the Software.
 *
-*	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS 
-*	OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
-*	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL 
-*	THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER 
-*	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING 
-*	FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS 
+*	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+*	OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+*	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+*	THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+*	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+*	FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 *	IN THE SOFTWARE.
 */
 
 #include "precompiled.h"
 
-VarFloat movement_strafe_helper_accumulation("movement_strafe_helper_accumulation", "Adds YAW angles to your strafes making them more efficient", 1.0f, 0.01f, 3.0f);
+VarFloat movement_strafe_helper_accumulation("movement_strafe_helper_accumulation", "Adds YAW angles to your strafes making them more efficient", 1.0f, 0.0f, 3.0f);
 VarBoolean movement_strafe_helper_accumulation_on_ground("movement_strafe_helper_accumulation_on_ground", "Enables strafe accumulation when on ground", false);
 
 enum EStrafeDir
@@ -46,6 +46,7 @@ enum EMoveDirection
 
 // strafing with mouse
 VarBoolean movement_strafe_helper_strafe_with_mouse("movement_strafe_helper_strafe_with_mouse", "Performs moves with mouse. Works only forward/backward", false);
+VarInteger movement_strafe_helper_efficiency("movement_strafe_helper_efficiency", "The more strafes, the lower the efficiency", 100, 0, 100);
 VarBoolean movement_strafe_helper_strafe_dir_auto("movement_strafe_helper_strafe_dir_auto", "Automatically deduces strafe direction based on keys held", false);
 VarInteger movement_strafe_helper_strafe_dir("movement_strafe_helper_strafe_dir", "Strafe direction", MOVE_FORWARD, MOVE_FORWARD, MOVE_LEFT);
 
@@ -57,20 +58,20 @@ struct move_direction_t
 
 // the "forward" strafe is always no strafe, so we zero everything
 static const std::array<std::array<move_direction_t, 2>, 4> g_move_dirs =
-{{
-	// MOVE_FORWARD
-	// forward and back vector is FORWARD & BACK
-	// side vectors are LEFT & RIGHT
-	{
-		move_direction_t( // STRAFE RIGHT
-			false, true, false, false,
-			250, 0
-		),
-		move_direction_t( // STRAFE LEFT
-			false, false, false, true,
-			-250, 0
-		),
-	},
+{ {
+		// MOVE_FORWARD
+		// forward and back vector is FORWARD & BACK
+		// side vectors are LEFT & RIGHT
+		{
+			move_direction_t( // STRAFE RIGHT
+				false, true, false, false,
+				250, 0
+			),
+			move_direction_t( // STRAFE LEFT
+				false, false, false, true,
+				-250, 0
+			),
+		},
 	// MOVE_RIGHT
 	// forward and back vector is RIGHT & LEFT
 	// side vectors are FORWARD & BACK
@@ -89,7 +90,7 @@ static const std::array<std::array<move_direction_t, 2>, 4> g_move_dirs =
 	// side vectors are RIGHT & LEFT
 	{
 		move_direction_t( // STRAFE RIGHT
-			false, true, false, true,
+			false, false, false, true,
 			-250, 0
 		),
 		move_direction_t( // STRAFE LEFT
@@ -111,11 +112,11 @@ static const std::array<std::array<move_direction_t, 2>, 4> g_move_dirs =
 		),
 	},
 
-}};
+} };
 
 void CMovementStrafeHelper::update()
 {
-	bool is_onladder = CLocalState::the().is_on_ladder();
+	const bool is_onladder = CLocalState::the().is_on_ladder();
 	if (is_onladder)
 	{
 		return;
@@ -123,35 +124,79 @@ void CMovementStrafeHelper::update()
 
 	auto cmd = CClientMovementPacket::the().get_cmd();
 	auto cl = CMemoryHookMgr::the().cl().get();
+	const bool is_surfing = CLocalState::the().is_surfing();
 
-	float x = CLocalState::the().get_viewangle_delta().x;
+	float x = CLocalState::the().get_viewangle_delta()[YAW];
+	int new_dir = -1;
 	if (x > 0)
 	{
-		m_mouse_direction = RIGHT;
+		new_dir = RIGHT;
 	}
 	else if (x < 0)
 	{
-		m_mouse_direction = LEFT;
+		new_dir = LEFT;
+	}
+	else if (is_surfing)
+	{
+		new_dir = m_mouse_direction;
 	}
 	else // no mouse movement
 	{
-		m_mouse_direction = FORWARD;
+		new_dir = FORWARD;
 	}
 
-	bool is_onground = CLocalState::the().is_on_ground_safe();
-	if (is_onground)
+	const float frametime = CLocalState::the().get_engine_frametime();
+	const bool is_onground = CLocalState::the().is_on_ground();
+
+	if (is_onground && !is_surfing)
 	{
-		if (movement_strafe_helper_accumulation_on_ground.get_value())
+		m_bad_frames = m_good_frames = 0;
+
+		if (!CMovement::bunnyhop.is_active() && !CMovement::gs.is_active())
 		{
-			correction();
+			if (movement_strafe_helper_accumulation_on_ground.get_value())
+			{
+				m_mouse_direction = new_dir;
+
+				correction();
+			}
+			else
+			{
+				m_mouse_direction = FORWARD;
+			}
+
+			return;
 		}
-		return;
+	}
+	else
+	{
+		correction();
+	}
+
+	if (new_dir != m_mouse_direction)
+	{
+		// we can't exactly make the required efficiency, at least i haven't found a way.
+		const float max_eff = (float)movement_strafe_helper_efficiency.get_value();
+		if (max_eff >= 100.0f || CMovement::gs.is_active() || 100.0f - (100.0f * (m_bad_frames * frametime * 10.0f)) <= max_eff)
+		{
+			m_mouse_direction = new_dir;
+		}
+		else
+		{
+			m_good_frames = 0;
+			m_bad_frames++;
+		}
+	}
+	else if (new_dir != FORWARD)
+	{
+		m_bad_frames = 0;
+		m_good_frames++;
 	}
 
 	if (movement_strafe_helper_strafe_with_mouse.get_value())
 	{
 		EMoveDirection wanted_dir;
-		
+
 		if (!movement_strafe_helper_strafe_dir_auto.get_value())
 		{
 			wanted_dir = (EMoveDirection)movement_strafe_helper_strafe_dir.get_value();
@@ -184,8 +229,6 @@ void CMovementStrafeHelper::update()
 			CClientMovementPacket::the().set_button_bit(IN_MOVELEFT, strafe_dir.move_left);
 		}
 	}
-
-	correction();
 }
 
 void CMovementStrafeHelper::render_debug()

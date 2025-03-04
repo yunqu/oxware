@@ -30,22 +30,15 @@
 
 InCommand CThirdPerson::thirdperson = InCommand("thirdperson", NULL, true, IN_ACTCOND_Alive);
 
-VarInteger thirdperson_dist("thirdperson_dist", "Distance from the player when in 3rd person view", 0, 0, 300);
+VarInteger thirdperson_dist("thirdperson_dist", "Distance from the player when in 3rd person view", 0, 0, 1000);
+VarFloat thirdperson_smooth("thirdperson_smooth", "Uses linear interpolation to smooth the movement", 1.0f, 0.0f, 2.0f);
 VarBoolean thirdperson_block_wall("thirdperson_block_wall", "3rd person camera gets blocked by a solid object, doesn't clip through", true);
 
 void CThirdPerson::update(hl::ref_params_t* pparams)
 {
-	if (!thirdperson.is_active())
-	{
-		return;
-	}
-
 	float dist = (float)thirdperson_dist.get_value();
-
-	if (dist == 0.0f)
-	{
-		return;
-	}
+	float smooth = (float)thirdperson_smooth.get_value();
+	smooth = smooth != 0 ? (10.0f / smooth) * pparams->frametime : 1.0f;
 
 	auto local = CLocalState::the().local_player();
 	if (!local)
@@ -53,38 +46,52 @@ void CThirdPerson::update(hl::ref_params_t* pparams)
 		return;
 	}
 
-	// Start from clients view pos.
-	Vector start_eye = local->get_eye_pos();
-	
-	auto event_api = CMemoryHookMgr::the().cl_enginefuncs()->pEventAPI;
-	
-	// Trace for solid wall.
-	hl::pmtrace_t tr;
-	event_api->EV_SetTraceHull(2);
-	event_api->EV_PlayerTrace(
-		start_eye,
-		start_eye - pparams->forward * 4096.0f,
-		PM_GLASS_IGNORE,
-		-1, 
-		&tr);
-	
-	// Multiply the forward vector by the distance amount.
-	Vector offset, dir;
-	dir = pparams->forward * -dist;
-
-	// Check for wall collision.
-	if (dist > start_eye.Distance(tr.endpos) && thirdperson_block_wall.get_value())
+	if (thirdperson.is_active())
 	{
-		offset += tr.endpos - start_eye + pparams->forward * 2.0f;
+		// Start from clients view pos.
+		Vector start_eye = local->get_eye_pos();
+
+		auto event_api = CMemoryHookMgr::the().cl_enginefuncs()->pEventAPI;
+
+		// Trace for solid wall.
+		hl::pmtrace_t tr;
+		event_api->EV_SetTraceHull(2);
+		event_api->EV_PlayerTrace(
+			start_eye,
+			start_eye - pparams->forward * 4096.0f,
+			PM_GLASS_IGNORE,
+			-1,
+			&tr);
+
+		// Multiply the forward vector by the distance amount.
+		Vector dir = pparams->forward * -dist;
+
+		if (dist > 0.0f)
+		{
+			// Check for wall collision.
+			if (dist > start_eye.Distance(tr.endpos) && thirdperson_block_wall.get_value())
+			{
+				m_offset.Lerp(m_offset, tr.endpos - start_eye + pparams->forward * 2.0f, smooth);
+			}
+			else
+			{
+				m_offset.Lerp(m_offset, dir, smooth);
+			}
+		}
+		else
+		{
+			m_offset.Lerp(m_offset, (tr.endpos - start_eye) * 0.45f, smooth);
+		}
+
+		// if CL_IsThirdPerson() returns true, game fucks up our view angles. Restore.
+		pparams->viewangles = CMemoryHookMgr::the().cl().get()->viewangles;
 	}
 	else
 	{
-		offset += dir;
+		static Vector zero(0, 0, 0);
+		m_offset.Lerp(m_offset, zero, smooth);
 	}
-
+	
 	// Update the distance depending on the wall collision distance.
-	pparams->vieworg += offset;
-
-	// if CL_IsThirdPerson() returns true, game fucks up our view angles. Restore.
-	pparams->viewangles = CMemoryHookMgr::the().cl().get()->viewangles;
+	pparams->vieworg += m_offset;
 }

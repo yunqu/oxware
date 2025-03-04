@@ -45,16 +45,18 @@ void CUIMenu::on_initialize()
 			{
 				auto& tab_world_main = tab_world.m_sections["main"];
 				tab_world_main.m_children.push_back(new MenuChilden::World::Removals({ "Removals", 250, true }));
-				tab_world_main.m_children.push_back(new MenuChilden::World::Thirdperson({ "Thirdperson", 125, true }));
+				tab_world_main.m_children.push_back(new MenuChilden::World::Thirdperson({ "Thirdperson", 175, true }));
+				tab_world_main.m_children.push_back(new MenuChilden::World::FreeCamera({ "Free camera", 125, true }));
 				tab_world_main.m_children.push_back(new MenuChilden::World::AntiDemoRecorder({ "📼 Anti demo recorder", 125, true }));
 				tab_world_main.m_children.push_back(new MenuChilden::World::AntiScreen({ "🖥 Anti screen", 90, true }));
 				tab_world_main.m_children.push_back(new MenuChilden::World::Automation({ "Automation", 120, true }));
 				tab_world_main.m_children.push_back(new MenuChilden::World::SpeedControl({ "🏃 Speed control", 225, true }));
-				tab_world_main.m_children.push_back(new MenuChilden::World::ViewmodelOffset({ "Viewmodel offset", 90, true }));
+				tab_world_main.m_children.push_back(new MenuChilden::World::ViewmodelOffset({ "Viewmodel offset", 200, true }));
 				tab_world_main.m_children.push_back(new MenuChilden::World::Backtrack({ "👥 Backtrack", 125, true }));
 				tab_world_main.m_children.push_back(new MenuChilden::World::SmokeVisuals({ "Smoke visuals", 180, true }));
 				tab_world_main.m_children.push_back(new MenuChilden::World::NonSteamFpsFix({ "Non-steam fps fix", 150, true }));
 				tab_world_main.m_children.push_back(new MenuChilden::World::WorldVisuals({ "🌎 World visuals", 235, true }));
+				tab_world_main.m_children.push_back(new MenuChilden::World::BulletTrace({ "Bullet trace", 150, true }));
 				tab_world_main.m_children.push_back(new MenuChilden::World::EnvironmentalEffects({ "⛈ Environmental effects", 300, true }));
 			}
 		}
@@ -82,6 +84,7 @@ void CUIMenu::on_initialize()
 				tab_screen_main.m_children.push_back(new MenuChilden::Screen::ESP({ "🔳 ESP", 290, true }));
 				tab_screen_main.m_children.push_back(new MenuChilden::Screen::CustomCrosshair({ "➕ Custom crosshair", 265, true }));
 				tab_screen_main.m_children.push_back(new MenuChilden::Screen::ClShowFPSEnhancement({ "cl_showfps enhancement", 130, true }));
+				tab_screen_main.m_children.push_back(new MenuChilden::Screen::FPSUnlocker({ "FPS unlocker", 100, true }));
 				tab_screen_main.m_children.push_back(new MenuChilden::Screen::MovementInfo({ "Movement info", 150, true }));
 			}
 		}

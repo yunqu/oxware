@@ -41,15 +41,16 @@ void CLocalState::update_clientmove(float frametime, hl::usercmd_t* cmd)
 	m_engine_frametime = frametime;
 
 	auto cl = CMemoryHookMgr::the().cl().get();
-	m_vieangle_delta = Vector2D(cl->viewangles[YAW] - m_last_viewangles[YAW], cl->viewangles[PITCH] - m_last_viewangles[PITCH]);
-	m_vieangle_delta *= -1.0f;
-
+	m_viewangle_delta = cl->viewangles - m_last_viewangles;
+	CMath::the().normalize_angles(m_viewangle_delta);
+	m_viewangle_delta.Negate();
+	
 	// round to zero
-	if (m_vieangle_delta.x < 0.01 && m_vieangle_delta.x > -0.01) m_vieangle_delta.x = 0.0f;
-	if (m_vieangle_delta.y < 0.01 && m_vieangle_delta.y > -0.01) m_vieangle_delta.y = 0.0f;
+	if (m_viewangle_delta.x < 0.01 && m_viewangle_delta.x > -0.01) m_viewangle_delta.x = 0.0f;
+	if (m_viewangle_delta.y < 0.01 && m_viewangle_delta.y > -0.01) m_viewangle_delta.y = 0.0f;
 
 	m_pmove = *CMemoryHookMgr::the().pmove().get();
-
+	
 	m_current_frame = &cl->frames[cl->parsecountmod];
 
 	// playermove flags
@@ -60,9 +61,19 @@ void CLocalState::update_clientmove(float frametime, hl::usercmd_t* cmd)
 
 	m_moving_velocity = m_pmove->velocity;
 	m_ground_angle = CGameUtil::the().compute_ground_angle_for_origin(m_pmove->origin);
-	m_ground_dist = CGameUtil::the().compute_distance_to_ground(m_pmove->origin);
+	m_ground_dist = CGameUtil::the().compute_distance_to_ground(m_pmove->origin, 4096.0f, m_tracing_hull);
 	m_edge_dist = CGameUtil::the().compute_edge_distance(m_pmove->origin);
 	m_is_surfing = m_ground_angle > 45.0f && m_ground_dist < 30.0f;
+
+	if (m_pmove->onground != -1)
+	{
+		m_fog_counter++;
+		m_fog_counter = std::min(m_fog_counter, 1000);
+	}
+	else
+	{
+		m_fog_counter = 0;
+	}
 
 	// in-game chat
 	m_in_messagemode = *CMemoryHookMgr::the().key_dest().get() == hl::key_message;
@@ -192,6 +203,11 @@ float CLocalState::get_edge_dist()
 	return m_edge_dist;
 }
 
+int CLocalState::get_fog_counter()
+{
+	return m_fog_counter;
+}
+
 bool CLocalState::is_surfing()
 {
 	return m_is_surfing;
@@ -224,9 +240,9 @@ EPlayerHull CLocalState::get_current_hull_tracing()
 	return m_tracing_hull;
 }
 
-Vector2D CLocalState::get_viewangle_delta()
+Vector CLocalState::get_viewangle_delta()
 {
-	return m_vieangle_delta;
+	return m_viewangle_delta;
 }
 
 hl::frame_t* CLocalState::get_current_frame()

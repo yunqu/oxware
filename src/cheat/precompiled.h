@@ -182,6 +182,9 @@ namespace hl
 #include <hlsdk/engine/sys_engine.h>
 #include <hlsdk/engine/pmtrace.h>
 
+// client
+#include <hlsdk/cl_dll/StudioModelRenderer.h>
+
 // particleman
 #include <hlsdk/interface/ParticleMan/IParticleMan.h>
 #include <hlsdk/particleman/pman_frustum.h>
@@ -285,6 +288,7 @@ enum EPlayerHull
 #include "game/EntityManager.h"
 #include "game/SpriteManager.h"
 #include "game/LocalState.h"
+#include "game/HitBoxTracker.h"
 #include "game/ClientMovementPacket.h"
 #include "game/VideoModeUtil.h"
 #include "game/ParticlemanMiniMemEmulation.h"
@@ -308,7 +312,9 @@ enum EPlayerHull
 #include "features/StuffCmdFilter.h"
 #include "features/ResourceConsistencyBypass.h"
 #include "features/IngameScreenRendering.h"
+#include "features/InconnectFpsUnlocker.h"
 #include "features/ThirdPerson.h"
+#include "features/FreeCamera.h"
 #include "features/NonSteamFpsFixer.h"
 #include "features/AntiDemoRecorder.h"
 #include "features/WorldVisuals.h"

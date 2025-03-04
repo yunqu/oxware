@@ -29,7 +29,9 @@
 #include "precompiled.h"
 
 VarBoolean viewmodel_offset_enable("viewmodel_offset_enable", "Enables shifted viewmodel", false);
-VarFloat viewmodel_offset_value("viewmodel_offset_value", "Shifts viewmodel back from the camera origin", 0.0f, -5.0f, 10.0f);
+VarFloat viewmodel_offset_x("viewmodel_offset_x", "Shifts the viewmodel along the X axis", 0.0f, -10.0f, 10.0f);
+VarFloat viewmodel_offset_y("viewmodel_offset_y", "Shifts the viewmodel along the Y axis", 0.0f, -10.0f, 10.0f);
+VarFloat viewmodel_offset_z("viewmodel_offset_z", "Shifts the viewmodel along the Z axis", 0.0f, -10.0f, 10.0f);
 
 void CViewmodelOffset::update()
 {
@@ -40,7 +42,9 @@ void CViewmodelOffset::update()
 
 	auto local = CLocalState::the().local_player();
 	if (!local)
+	{
 		return;
+	}
 
 	if (CGameUtil::the().is_spectator())
 	{
@@ -50,10 +54,16 @@ void CViewmodelOffset::update()
 	auto cl = CMemoryHookMgr::the().cl().get();
 	auto vm = &cl->viewent;
 
-	float offset = viewmodel_offset_value.get_value();
+	const float x = viewmodel_offset_x.get_value();
+	const float y = viewmodel_offset_y.get_value();
+	const float z = viewmodel_offset_z.get_value();
 
-	Vector forward;
-	CMath::the().angle_vectors(cl->viewangles, &forward, nullptr, nullptr);
+	Vector forward, right, up;
+	CMath::the().angle_vectors(cl->viewangles, &forward, &right, &up);
 
-	vm->origin += forward * offset;
+	forward *= z;
+	right *= x;
+	up *= y;
+
+	vm->origin += forward + right + up;
 }

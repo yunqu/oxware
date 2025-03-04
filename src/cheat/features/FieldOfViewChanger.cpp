@@ -30,6 +30,7 @@
 
 VarBoolean custom_fov("custom_fov", "Forces custom field of view", false);
 VarFloat custom_fov_value("custom_fov_value", "Scales original field of view value by this amount", 1.0f, 1.0f, 1.5f);
+VarFloat custom_fov_based_speed("custom_fov_based_speed", "", 1.0f, 0.0f, 3.0f);
 
 void CFieldOfViewChanger::scale_fov()
 {
@@ -40,4 +41,12 @@ void CFieldOfViewChanger::scale_fov()
 
 	float *p_original_fov = CMemoryHookMgr::the().scr_fov_value().get();
 	*p_original_fov *= custom_fov_value.get_value();
+
+	const float scale = custom_fov_based_speed.get_value();
+
+	if (scale)
+	{
+		const float velocity = CLocalState::the().get_local_velocity_2d();
+		*p_original_fov += (velocity / *p_original_fov) * scale;
+	}
 }

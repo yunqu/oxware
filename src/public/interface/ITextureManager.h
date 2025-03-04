@@ -68,6 +68,7 @@ public:
 
 	// creates and uploads new texture to the gpu. on success, a pointer to the texture object is returned. you can register texture either from
 	// 1# an image file buffer (raw JPG, PNG, BMP file contents) or 2# using raw pixel data of the image.
+	virtual const BaseTexture& create_and_register_new_texture_from_file(const char* identifier, const char* file_name) = 0;
 	virtual const BaseTexture& create_and_register_new_texture_from_filedata(const char* identifier, uint8_t* file_data, uint32_t length) = 0;
 	virtual const BaseTexture& create_and_register_new_texture_from_pixeldata(const char* identifier, uint8_t* pixel_data, const Vector2D& resolution) = 0;
 

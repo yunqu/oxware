@@ -35,6 +35,12 @@
 class BaseTextureLoaderFromFile
 {
 public:
+	virtual bool load_texture_and_upload_to_gpu(BaseTexture& texture_to_be_loaded, const char* file_name) = 0;
+};
+
+class BaseTextureLoaderFromFileBuffer
+{
+public:
 	virtual bool load_texture_and_upload_to_gpu(BaseTexture& texture_to_be_loaded, uint8_t* file_data, uint32_t length) = 0;
 };
 
@@ -70,8 +76,37 @@ protected:
 	}
 };
 
+class TextureLoaderFromFile : public virtual TextureLoader<BaseTextureLoaderFromFile>
+{
+public:
+	bool load_texture_and_upload_to_gpu(BaseTexture& texture_to_be_loaded, const char* file_name) override
+	{
+		assert(file_name && file_name[0]);
+		
+		int width, height;
+		uint8_t* image_pixel_data = SOIL_load_image(file_name, &width, &height, NULL, SOIL_LOAD_RGBA);
+
+		if (!image_pixel_data)
+		{
+			CConsole::the().error("SOIL error: {}", SOIL_last_result());
+			return false;
+		}
+
+		Vector2D image_resolution = { (float)width, (float)height };
+
+		GLuint new_texture_id = upload_texture_to_gpu(image_resolution, image_pixel_data);
+
+		// free soil buffer
+		SOIL_free_image_data(image_pixel_data);
+
+		// fill texture data
+		texture_to_be_loaded.create(image_resolution, new_texture_id);
+		return true;
+	}
+};
+
 // texture loader implementation from a file buffer
-class TextureLoaderFromFileData : public virtual TextureLoader<BaseTextureLoaderFromFile>
+class TextureLoaderFromFileData : public virtual TextureLoader<BaseTextureLoaderFromFileBuffer>
 {
 public:
 	bool load_texture_and_upload_to_gpu(BaseTexture& texture_to_be_loaded, uint8_t* file_data, uint32_t length) override
@@ -81,7 +116,7 @@ public:
 
 		int width, height;
 		uint8_t* image_pixel_data = SOIL_load_image_from_memory(file_data, length, &width, &height, NULL, SOIL_LOAD_RGBA);
-
+		
 		if (!image_pixel_data)
 		{
 			CConsole::the().error("SOIL error: {}", SOIL_last_result());
@@ -130,6 +165,7 @@ public:
 	void initialize();
 	void shutdown();
 
+	const BaseTexture& create_and_register_new_texture_from_file(const char* identifier, const char* file_name);
 	const BaseTexture& create_and_register_new_texture_from_filedata(const char* identifier, uint8_t* file_data, uint32_t length);
 	const BaseTexture& create_and_register_new_texture_from_pixeldata(const char* identifier, uint8_t* pixel_data, const Vector2D& resolution);
 	bool destroy_and_unregister_texture(const char* identifier);
@@ -150,6 +186,7 @@ private:
 private:
 	std::unordered_map<std::string, BaseTexture> m_precached_textures;
 
+	TextureLoaderFromFile* m_file_texture_loader;
 	TextureLoaderFromFileData* m_filedata_texture_loader;
 	TextureLoaderFromPixelData* m_pixeldata_texture_loader;
 };
@@ -176,6 +213,7 @@ CTextureManager::~CTextureManager()
 void CTextureManager::initialize()
 {
 	// texture loaders
+	m_file_texture_loader = new TextureLoaderFromFile();
 	m_filedata_texture_loader = new TextureLoaderFromFileData();
 	m_pixeldata_texture_loader = new TextureLoaderFromPixelData();
 
@@ -186,12 +224,31 @@ void CTextureManager::initialize()
 
 void CTextureManager::shutdown()
 {
+	delete m_file_texture_loader;
 	delete m_filedata_texture_loader;
 	delete m_pixeldata_texture_loader;
 
 	m_precached_textures.clear();
 
 	CConsole::the().info("Shutting down TextureManager...");
+}
+
+const BaseTexture& CTextureManager::create_and_register_new_texture_from_file(const char* identifier, const char* file_name)
+{
+	// create the texture here by using the array operator
+	auto& new_texture = m_precached_textures[identifier];
+
+	// upload the texture data to gpu, and if we fail, use the checkerboard texture as invalid texture.
+	if (!m_file_texture_loader->load_texture_and_upload_to_gpu(new_texture, file_name))
+	{
+		on_texture_register_failure(identifier);
+
+		return get_invalid_texture();
+	}
+
+	on_texture_register_success(identifier, new_texture);
+
+	return new_texture;
 }
 
 const BaseTexture& CTextureManager::create_and_register_new_texture_from_filedata(const char* identifier, uint8_t* file_data, uint32_t length)

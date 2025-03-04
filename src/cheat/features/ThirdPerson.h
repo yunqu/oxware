@@ -31,6 +31,7 @@
 #pragma once
 
 extern VarInteger thirdperson_dist;
+extern VarFloat thirdperson_smooth;
 extern VarBoolean thirdperson_block_wall;
 
 class CThirdPerson
@@ -42,6 +43,9 @@ public:
 	void update(hl::ref_params_t* pparams);
 
 	static InCommand thirdperson;
+
+private:
+	Vector m_offset;
 };
 
 #endif // THIRDPERSON_H

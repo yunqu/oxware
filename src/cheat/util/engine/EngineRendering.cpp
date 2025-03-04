@@ -165,9 +165,11 @@ void CEngineFontRendering::render_information()
 
 	render_debug("--- Miscellaneous ---");
 	
+	double frametime = CLocalState::the().get_engine_frametime();
 	float gnd_dist = CLocalState::the().get_ground_dist();
 	float edge_dist = CLocalState::the().get_edge_dist();
 	float gnd_angle = CLocalState::the().get_ground_angle();
+	int fog_counter = CLocalState::the().get_fog_counter();
 	bool is_surfing = CLocalState::the().is_surfing();
 	float fall_vel = CLocalState::the().get_fall_velocity();
 	float vel_2d = CLocalState::the().get_local_velocity_2d();
@@ -189,10 +191,12 @@ void CEngineFontRendering::render_information()
 
 	float movespeed = sqrt((cmd->forwardmove * cmd->forwardmove) + (cmd->sidemove * cmd->sidemove) + (cmd->upmove * cmd->upmove));
 
+	render_debug("frametime: {:0.3}", frametime);;
 	render_debug("Acceleration: {:0.3f} u/frame", rolling_accel);
 	render_debug("Ground distance: {:0.3f} units", gnd_dist);
 	render_debug("Edge distance: {:0.3f} units", edge_dist);
 	render_debug("Ground angle: {:0.1f} a", gnd_angle);
+	render_debug("FOG counter: {}", fog_counter);
 	render_debug("Fall velocity: {:0.3f} u/s", fall_vel);
 	render_debug("Velocity 2D: {:0.3f} u/s", vel_2d);
 	render_debug("Velocity 3D: {} u/s", vel_vec);

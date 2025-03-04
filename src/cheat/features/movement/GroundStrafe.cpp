@@ -36,16 +36,17 @@ VarInteger movement_gs_legit_ground_dist_min("movement_gs_legit_ground_dist_min"
 VarInteger movement_gs_legit_ground_dist_max("movement_gs_legit_ground_dist_max", "Maximal ground distance where to start ducking", 12, 2, 20);
 VarInteger movement_gs_legit_efficiency("movement_gs_legit_efficiency", "Efficiency settings of the GS", 1, 0, 2);
 VarInteger movement_gs_legit_scroll_density("movement_gs_legit_scroll_density", "How dense will the resulting scroll pattern be", 5, 1, 10);
+VarBoolean movement_gs_rage_jump_animation("movement_gs_rage_jump_animation", "Simulates a jump animation when ducking (accuracy drops)", false);
 
 void CMovementGroundStrafe::update(float frametime)
 {
-	int gs_mode = movement_gs_mode.get_value();
-
 	bool is_surfing = CLocalState::the().is_surfing();
 	if (is_surfing)
 	{
 		return;
 	}
+	
+	int gs_mode = movement_gs_mode.get_value();
 
 	if (gs_mode == GSMODE_Legit)
 	{
@@ -72,6 +73,11 @@ void CMovementGroundStrafe::rage_gs(float frametime)
 	{
 		if (did_duck)
 		{
+			if (movement_gs_rage_jump_animation.get_value())
+			{
+				CClientMovementPacket::the().set_button_bit(IN_JUMP, true);
+			}
+
 			CClientMovementPacket::the().set_button_bit(IN_DUCK, false);
 			did_duck = false;
 		}

@@ -396,6 +396,7 @@ struct MenuChilden
 	{
 		DECL_CHILD(Removals);
 		DECL_CHILD(Thirdperson);
+		DECL_CHILD(FreeCamera);
 		DECL_CHILD(AntiDemoRecorder);
 		DECL_CHILD(AntiScreen);
 		DECL_CHILD(Automation);
@@ -405,6 +406,7 @@ struct MenuChilden
 		DECL_CHILD(SmokeVisuals);
 		DECL_CHILD(NonSteamFpsFix);
 		DECL_CHILD(WorldVisuals);
+		DECL_CHILD(BulletTrace);
 		DECL_CHILD(EnvironmentalEffects);
 	};
 
@@ -424,6 +426,7 @@ struct MenuChilden
 		DECL_CHILD(ESP);
 		DECL_CHILD(CustomCrosshair);
 		DECL_CHILD(ClShowFPSEnhancement);
+		DECL_CHILD(FPSUnlocker);
 		DECL_CHILD(MovementInfo);
 	};
 

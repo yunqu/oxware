@@ -28,20 +28,67 @@
 
 #include "precompiled.h"
 
-void CBulletTrace::initialize_gui()
+VarBoolean bullettrace_enable("bullettrace_enable", "Leaves trace of bullet marks", false);
+VarColor bullettrace_color("bullettrace_color", "Color of trace", CColor(255, 255, 255, 255));
+
+VarBoolean bullettrace_enemy("bullettrace_enemy", "Trace of enemy", false);
+VarBoolean bullettrace_teammates("bullettrace_teammates", "Trace of teammates", false);
+VarFloat bullettrace_thickness("bullettrace_thickness", "Thickness of trace", 0.1f, 0.1f, 3.0f);
+VarFloat bullettrace_liveness("bullettrace_liveness", "Time of trace life", 1.0f, 0.5f, 5.0f);
+
+void CBulletTrace::on_connected()
 {
-	COxWareUI::the().add_background_rendering_code([this]() { on_render(); });
-	COxWareUI::the().add_background_rendering_constrain(
-		[this]()
-		{
-			return !m_bullets_fired.empty();
-		});
+	m_laser_index = CMemoryHookMgr::the().cl_enginefuncs()->pEventAPI->EV_FindModelIndex("sprites/laserbeam.spr");
+}
+
+void CBulletTrace::render()
+{
+	if (m_laser_index == 0)
+	{
+		return;
+	}
+
+	for (const auto& bullet : m_bullets_fired)
+	{
+		CMemoryHookMgr::the().cl_enginefuncs()->pEfxAPI->R_BeamPoints(
+			(float*)&bullet.start_org, (float*)&bullet.end_org, m_laser_index,
+			bullettrace_liveness.get_value(), bullettrace_thickness.get_value(),
+			0, bullet.color.a, 2, 0, 0, bullet.color.r, bullet.color.g, bullet.color.b);
+	}
+
+	m_bullets_fired.clear();
 }
 
 void CBulletTrace::on_bullet_fired(
-	int entid, const Vector& forward, const Vector& right, const Vector& up, const Vector& source, 
+	int entid, const Vector& forward, const Vector& right, const Vector& up, const Vector& source,
 	const Vector& shooting_direction, const Vector& spread, float penetration_dist)
 {
+	if (!bullettrace_enable.get_value())
+	{
+		return;
+	}
+
+	auto player = CEntityMgr::the().get_local_player();
+	if (!player || !(*player)->is_valid())
+	{
+		return;
+	}
+
+	const bool is_local = entid == (*player)->cl_entity()->index;
+
+	if (!is_local)
+	{
+		const auto local_team = (*player)->get_team();
+		player = CEntityMgr::the().get_player_by_id(entid);
+		const auto player_team = (*player)->get_team();
+		
+		if ((!bullettrace_enemy.get_value() && local_team != player_team) ||
+			(!bullettrace_teammates.get_value() && local_team == player_team))
+		{
+			return;
+		}
+	}
+
 	Vector dir_with_spread = calc_bullet_shoot_dir_vector(shooting_direction, spread, right, up);
 
 	Vector bullet_impact = calc_bullet_endpos(source, dir_with_spread, penetration_dist);
@@ -49,37 +96,10 @@ void CBulletTrace::on_bullet_fired(
 
 	CConsole::the().info("traced_bullet_impact: {}", traced_bullet_impact);
 
-	m_bullets_fired.push_back({ source, traced_bullet_impact, GetTickCount() });
+	m_bullets_fired.push_back({ source, traced_bullet_impact, is_local ? bullettrace_color.get_value() : (*player)->get_color_based_on_team() });
 }
 
-void CBulletTrace::on_render()
-{
-	if (!m_bullets_fired.empty())
-	{
-		auto& oldest_bullet = m_bullets_fired.front();
-	
-		if (oldest_bullet.get_life_duration_ms() > 5000)
-		{
-			m_bullets_fired.pop_front();
-		}
-	}
-
-	for (const auto& bullet : m_bullets_fired)
-	{
-		Vector2D screen_start, screen_end;
-		if (CGameUtil::the().world_to_screen(bullet.start_org, screen_start) &&
-			CGameUtil::the().world_to_screen(bullet.end_org, screen_end))
-		{
-			g_gui_window_rendering_i->render_line(
-				g_gui_window_rendering_i->get_current_drawlist(),
-				screen_start, screen_end,
-				CColor(0, 230, 0, 230));
-		}
-	}
-}
-
-Vector CBulletTrace::calc_bullet_shoot_dir_vector(
-	const Vector& original_shootdir, const Vector& spread, const Vector& right, const Vector& up)
+Vector CBulletTrace::calc_bullet_shoot_dir_vector(const Vector& original_shootdir, const Vector& spread, const Vector& right, const Vector& up)
 {
 	// apply spread to the final direction
 	return original_shootdir + (spread.x * right + spread.y * up);
@@ -93,8 +113,11 @@ Vector CBulletTrace::calc_bullet_endpos(const Vector& source, const Vector& shoo
 
 Vector CBulletTrace::calc_traced_bullet_endpos(const Vector& source, const Vector& end)
 {
-	auto pm = *CMemoryHookMgr::the().pmove().get();
-	auto trace = pm->PM_TraceLine((float*)&source, (float*)&end, PM_TRACELINE_ANYVISIBLE, pm->usehull, -1);
+	auto enginefuncs = CMemoryHookMgr::the().cl_enginefuncs();
+	hl::pmtrace_t trace;
 
-	return trace->endpos;
+	enginefuncs->pEventAPI->EV_SetTraceHull(2);
+	enginefuncs->pEventAPI->EV_PlayerTrace((float*)&source, (float*)&end, PM_GLASS_IGNORE, -1, &trace);
+
+	return trace.endpos;
 }

@@ -106,6 +106,9 @@ void CFeatureManager::precache_features()
 	// InGame Screen rendering
 	add_new_feature(BaseFeature(&ingamescreen_better_cl_showfps, "Better cl_showfps"));
 
+	// InConnect FPS unlocker
+	add_new_feature(BaseFeature(&inconnect_fps_unlocker, "FPS unlocker"));
+
 	// Movement
 	add_new_feature(BaseFeature(CMovement::bunnyhop.get_toggle_var(), "Bunnyhop"));
 	add_new_feature(BaseFeature(CMovement::airstuck.get_toggle_var(), "Air stuck"));
@@ -122,6 +125,9 @@ void CFeatureManager::precache_features()
 
 	// thirdperson
 	add_new_feature(BaseFeature(&thirdperson_dist, 0, "Thirdperson"));
+
+	// free camera
+	add_new_feature(BaseFeature(&freecam_enable, "Free camera"));
 
 	// non-steam fps fix
 	add_new_feature(BaseFeature(&nonsteam_fps_fix, "Non-steam FPS fix"));

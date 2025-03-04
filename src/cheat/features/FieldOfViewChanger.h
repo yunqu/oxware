@@ -32,6 +32,7 @@
 
 extern VarBoolean custom_fov;
 extern VarFloat custom_fov_value;
+extern VarFloat custom_fov_based_speed;
 
 class CFieldOfViewChanger
 {

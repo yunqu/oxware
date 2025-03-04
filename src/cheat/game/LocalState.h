@@ -85,6 +85,8 @@ public:
 	float get_ground_dist();
 	float get_edge_dist();
 
+	int get_fog_counter();
+
 	bool is_surfing();
 	bool is_on_ladder();
 
@@ -96,7 +98,7 @@ public:
 	// resolve the hull for ourselfs, otherwise tracing code will fail
 	EPlayerHull get_current_hull_tracing();
 
-	Vector2D get_viewangle_delta();
+	Vector get_viewangle_delta();
 
 	hl::frame_t* get_current_frame();
 
@@ -124,6 +126,8 @@ private:
 	float m_ground_angle = 0.0f;
 	float m_ground_dist = 0.0f;
 	float m_edge_dist = 0.0f;
+	
+	int m_fog_counter = 0.0f;
 
 	hl::playermove_t* m_pmove = nullptr;
 
@@ -131,7 +135,7 @@ private:
 
 	bool m_is_surfing = false;
 
-	Vector2D m_vieangle_delta;
+	Vector m_viewangle_delta;
 	Vector m_last_viewangles; // used to calc the delta
 
 	// set if alive, otherwise nullptr

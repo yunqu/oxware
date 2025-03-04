@@ -213,6 +213,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "mmap", "mmap", "{1B9B824F-F
 		src\public\injection\mmap\ManualMappedDllCurrentProcess.h = src\public\injection\mmap\ManualMappedDllCurrentProcess.h
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "cl_dll", "cl_dll", "{0DD49D14-226D-4789-8239-063DC17D6B77}"
+	ProjectSection(SolutionItems) = preProject
+		src\external\hlsdk\cl_dll\StudioModelRenderer.h = src\external\hlsdk\cl_dll\StudioModelRenderer.h
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -394,6 +399,7 @@ Global
 		{0ABD9162-319B-4584-91C2-3B02C90D9F8A} = {F4728D12-12D0-4669-9EB0-1D59EF1AEC00}
 		{387DCFFD-D12D-48C7-9397-F133917AF4BD} = {543F0349-31C7-46FF-9116-F348BE9EA3D3}
 		{1B9B824F-F07B-4C18-A66C-49D0480B9211} = {543F0349-31C7-46FF-9116-F348BE9EA3D3}
+		{0DD49D14-226D-4789-8239-063DC17D6B77} = {5DBC2167-676B-4A7A-866F-837BFE2FE31A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {61AAF24A-12CB-41AB-95DA-570F5D0CBFB6}

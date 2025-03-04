@@ -36,7 +36,8 @@ public:
 	DECL_BASIC_CLASS(CGameEvents);
 
 public:
-	void on_connect();
+	void on_connected();
+	void on_disconnected();
 };
 
 #endif // GAMEVENTS_H

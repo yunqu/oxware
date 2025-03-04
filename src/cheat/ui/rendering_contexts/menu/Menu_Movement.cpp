@@ -114,6 +114,7 @@ void MenuChilden::Movement::GroundStrafe::contents()
 		}
 		else if (movement_gs_mode.get_value() == 1) // rage
 		{
+			CUIMenuWidgets::the().add_checkbox("Jump animation", &movement_gs_rage_jump_animation);
 			CUIMenuWidgets::the().add_description_text(
 				"Rage bhop is highly obviously to someone, who analyzes your demo - be careful where you use it. "
 				"\n\nHowever, it suits well for HVH scenarious or simply for servers where no one cares about bhop hacks. "
@@ -159,13 +160,14 @@ void MenuChilden::Movement::StrafeHelper::contents()
 	&CMovement::the().strafe_helper,
 	[]()
 	{
-		CUIMenuWidgets::the().add_slider("Accumulation", "%0.2f", &movement_strafe_helper_accumulation);//
+		CUIMenuWidgets::the().add_slider("Accumulation", "%0.2f", &movement_strafe_helper_accumulation, "off");
 		CUIMenuWidgets::the().add_checkbox("Accumulation on ground", &movement_strafe_helper_accumulation_on_ground);
 
 		CUIMenuWidgets::the().feature_enabled_section(
 		&movement_strafe_helper_strafe_with_mouse,
 		[]()
 		{
+			CUIMenuWidgets::the().add_slider("Efficiency", "%0.0f %%", &movement_strafe_helper_efficiency);
 			CUIMenuWidgets::the().add_listbox("Direction", &movement_strafe_helper_strafe_dir, { "Forward", "Right", "Back", "Left" });
 			CUIMenuWidgets::the().add_checkbox("Deduce automatically", &movement_strafe_helper_strafe_dir_auto);
 		}, "Strafe with mouse");
@@ -196,9 +198,17 @@ void MenuChilden::Movement::Bunnyhop::contents()
 		g_gui_widgets_i->add_separtor_with_text("Others");
 		g_gui_widgets_i->add_spacing();
 		CUIMenuWidgets::the().add_slider("Jump repeat", "%0.0f ms", &movement_bhop_repeat_ms, "no limit");
+		CUIMenuWidgets::the().add_slider("Stand up", "%0.0f units", &movement_bhop_standup, "off");
 
 		CUIMenuWidgets::the().add_checkbox("Jump if on ladder", &movement_bhop_jump_on_ladder);
 		CUIMenuWidgets::the().add_checkbox("Jump if in water", &movement_bhop_jump_in_water);
+		CUIMenuWidgets::the().feature_enabled_section(
+		&movement_bhop_break_jump_animation,
+		[]()
+		{
+			CUIMenuWidgets::the().add_checkbox("No touch ground illusion", &movement_bhop_notouch_ground_illusion);
+		}, "Break jump animation");
+		CUIMenuWidgets::the().add_checkbox("Multi jump", &movement_bhop_multijump);
 
 		g_gui_widgets_i->add_separtor_with_text("Method");
 		CUIMenuWidgets::the().add_listbox("Mode##nolabel", &movement_bhop_mode, { "Legit", "Rage" });

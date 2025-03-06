@@ -186,27 +186,60 @@ appid_translation_t g_appid_translation_table[] =
 unsigned int CGameUtil::get_current_app_id()
 {
 	// TODO: This may not work on custom launchers.
-
 	auto cmdline = GetCommandLineA();
-
-	// the -game launch option always gets appended, even if we don't specify it.
-	auto parse_game_string = [](const std::string& cmdline) -> std::string
+	// Debugging input
+	CConsole::the().info("Command line: {}", cmdline);
+	if (!cmdline || cmdline[0] == '\0')
 	{
-		auto pos = cmdline.find("-game");
-
-		auto gamedir_begin_pos = pos + (sizeof("-game") - 1) + 1;
-		auto gamedir_end_pos = cmdline.find(" ", gamedir_begin_pos + 1);
-
-		return cmdline.substr(gamedir_begin_pos, gamedir_end_pos - gamedir_begin_pos);
-	};
-
-	auto current_gamedir = parse_game_string(cmdline);
-	if (current_gamedir.empty())
-	{
-		// this shouldn't really happen.
+		CConsole::the().error("Error: Command line is empty!");
 		return 0;
 	}
 
+	// Extract the game directory from the command line.
+	auto extract_directory_after_game = [](const std::string& cmdline) -> std::string
+		{
+			auto pos = cmdline.find("-game");
+			if (pos == std::string::npos)
+			{
+				CConsole::the().error("Error: '-game' flag not found in command line!");
+				return "";
+			}
+			auto gamedir_begin_pos = pos + 5 + 1; // Move past "-game " (5 chars + 1 space)
+			if (gamedir_begin_pos >= cmdline.size())
+			{
+				CConsole::the().error("Error: No game directory specified after '-game'");
+				return "";
+			}
+
+			auto gamedir_end_pos = cmdline.find(" ", gamedir_begin_pos);
+			return cmdline.substr(gamedir_begin_pos,
+								  (gamedir_end_pos == std::string::npos) ? std::string::npos : (gamedir_end_pos - gamedir_begin_pos));
+		};
+
+	// Extract the directory from the full command line.
+	auto extract_directory_before_exe = [](const std::string& cmdline) -> std::string
+		{
+			if (cmdline.find("Counter Strike") != std::string::npos) {
+				return "cstrike";
+			}
+			return "";
+		};
+
+	auto current_gamedir = extract_directory_after_game(cmdline);
+	if (current_gamedir.empty()) {
+		current_gamedir = extract_directory_before_exe(cmdline);
+	}
+	if (current_gamedir.empty())
+	{
+		// If still empty, this is an error, which shouldn't really happen
+		CConsole::the().error("Error: Failed to extract game directory from command line: {}", cmdline);
+		return 0;
+	}
+
+	// Debugging output
+	CConsole::the().info("Extracted game directory: {}", current_gamedir);
+
+	// Match against app ID translation table.
 	for (int i = 0; i < Q_ARRAYSIZE(g_appid_translation_table); i++)
 	{
 		if (!stricmp(g_appid_translation_table[i].gamedir, current_gamedir.c_str()))
@@ -215,8 +248,8 @@ unsigned int CGameUtil::get_current_app_id()
 		}
 	}
 
-	// unknown appid
-	CConsole::the().info("Unrecognized app id for your game: {}", current_gamedir);
+	// Unknown app ID
+	CConsole::the().error("Error: Unrecognized app id for your game: {}", current_gamedir);
 	return 0;
 }
 

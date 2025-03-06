@@ -332,6 +332,10 @@ std::filesystem::path CFileSystem::locate_halflife_dir()
 	{
 		ldr_data = g_libloader_i->get_target_loaded_dll_data_table_entry(L"cstrike.exe");
 	}
+	if (ldr_data == NULL)
+	{
+		ldr_data = g_libloader_i->get_target_loaded_dll_data_table_entry(L"cs.exe");
+	}
 
 	std::filesystem::path halflife_dir;
 
